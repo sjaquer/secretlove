@@ -71,6 +71,8 @@ export function CodeGate() {
     setRevealClickCount(prev => prev + 1);
   };
   
+  const visibleUnlockedCodes = unlockedCodes.filter(code => secretCodes[code]);
+
   return (
     <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm shadow-2xl">
       <CardHeader className="text-center">
@@ -93,8 +95,8 @@ export function CodeGate() {
                         </p>
                     </div>
                     <div className="grid gap-2">
-                        {unlockedCodes.length > 0 ? (
-                            unlockedCodes.map((code) => (
+                        {visibleUnlockedCodes.length > 0 ? (
+                            visibleUnlockedCodes.map((code) => (
                                 <Link href={secretCodes[code]} key={code} className="group grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground">
                                     <LockKeyhole className="h-4 w-4 text-muted-foreground" />
                                     <span className="font-mono text-sm">{code}</span>
