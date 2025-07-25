@@ -23,6 +23,7 @@ export function AquariumBackground() {
 
     window.addEventListener('mousemove', handleMouseMove);
 
+    // Generate bubbles only on the client-side
     const generatedBubbles = Array.from({ length: 30 }, (_, i) => ({
       id: i,
       style: {
@@ -66,22 +67,22 @@ export function AquariumBackground() {
 
       {/* Parallax Layer 1 (Far) */}
       <div style={parallaxStyle(15)} className="absolute inset-0">
-        <Image src="https://placehold.co/350x350.png" alt="Purple Coral" width={300} height={300} data-ai-hint="purple coral" className="absolute bottom-0 left-0 opacity-70 animate-[float_18s_ease-in-out_2s_infinite]" />
-        <Image src="https://placehold.co/400x300.png" alt="Rock Arch" width={350} height={250} data-ai-hint="underwater rock arch" className="absolute bottom-0 right-[15%] opacity-80" />
+        <Image src="https://placehold.co/300x300.png" alt="Purple Coral" width={300} height={300} data-ai-hint="purple coral" className="absolute bottom-0 left-0 opacity-70 animate-[float_18s_ease-in-out_2s_infinite]" />
+        <Image src="https://placehold.co/350x250.png" alt="Rock Arch" width={350} height={250} data-ai-hint="underwater rock arch" className="absolute bottom-0 right-[15%] opacity-80" />
       </div>
       
       {/* Parallax Layer 2 (Mid) */}
       <div style={parallaxStyle(30)} className="absolute inset-0">
-         <Image src="https://placehold.co/250x250.png" alt="Orange Fish School" width={200} height={200} data-ai-hint="orange fish school" className="absolute top-[20%] left-[15%] opacity-90 animate-[float-reverse_20s_ease-in-out_infinite]" />
+         <Image src="https://placehold.co/200x200.png" alt="Orange Fish School" width={200} height={200} data-ai-hint="orange fish school" className="absolute top-[20%] left-[15%] opacity-90 animate-[float-reverse_20s_ease-in-out_infinite]" />
          <Image src="https://placehold.co/150x150.png" alt="Pink Coral" width={150} height={150} data-ai-hint="pink coral" className="absolute bottom-[5%] right-[5%] opacity-80 animate-[float_15s_ease-in-out_1s_infinite]" />
-         <Image src="https://placehold.co/120x120.png" alt="Clownfish" width={90} height={90} data-ai-hint="cartoon clownfish" className="absolute top-1/2 right-1/3 opacity-95 animate-[float_10s_ease-in-out_1s_infinite]" />
+         <Image src="https://placehold.co/90x90.png" alt="Clownfish" width={90} height={90} data-ai-hint="cartoon clownfish" className="absolute top-1/2 right-1/3 opacity-95 animate-[float_10s_ease-in-out_1s_infinite]" />
       </div>
        
       {/* Parallax Layer 3 (Front) */}
       <div style={parallaxStyle(50)} className="absolute inset-0">
-        <Image src="https://placehold.co/200x200.png" alt="Orange Coral" width={180} height={180} data-ai-hint="orange coral reef" className="absolute bottom-0 left-[25%] opacity-90 animate-[float_12s_ease-in-out_infinite]" />
-        <Image src="https://placehold.co/100x100.png" alt="Crab" width={80} height={80} data-ai-hint="cartoon crab" className="absolute bottom-2 left-[10%] opacity-90" />
-        <Image src="https://placehold.co/150x150.png" alt="Green Seaweed" width={120} height={120} data-ai-hint="green seaweed" className="absolute bottom-0 right-[40%] opacity-85" />
+        <Image src="https://placehold.co/180x180.png" alt="Orange Coral" width={180} height={180} data-ai-hint="orange coral reef" className="absolute bottom-0 left-[25%] opacity-90 animate-[float_12s_ease-in-out_infinite]" />
+        <Image src="https://placehold.co/80x80.png" alt="Crab" width={80} height={80} data-ai-hint="cartoon crab" className="absolute bottom-2 left-[10%] opacity-90" />
+        <Image src="https://placehold.co/120x120.png" alt="Green Seaweed" width={120} height={120} data-ai-hint="green seaweed" className="absolute bottom-0 right-[40%] opacity-85" />
       </div>
 
       {/* Sandy bottom */}
