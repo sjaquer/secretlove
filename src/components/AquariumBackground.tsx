@@ -4,8 +4,14 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 
+interface Bubble {
+  id: number;
+  style: React.CSSProperties;
+}
+
 export function AquariumBackground() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [bubbles, setBubbles] = useState<Bubble[]>([]);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -16,6 +22,18 @@ export function AquariumBackground() {
     };
 
     window.addEventListener('mousemove', handleMouseMove);
+
+    const generatedBubbles = Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      style: {
+        left: `${Math.random() * 100}%`,
+        animation: `bubbles ${8 + Math.random() * 15}s linear ${Math.random() * 8}s infinite`,
+        width: `${5 + Math.random() * 20}px`,
+        height: `${5 + Math.random() * 20}px`,
+      },
+    }));
+    setBubbles(generatedBubbles);
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
@@ -32,16 +50,11 @@ export function AquariumBackground() {
        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200%] h-[150%] bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0)_60%)]"></div>
 
       {/* Bubbles */}
-      {[...Array(30)].map((_, i) => (
+      {bubbles.map((bubble) => (
         <div
-          key={i}
-          className="absolute bottom-0 h-4 w-4 rounded-full bg-white/20"
-          style={{
-            left: `${Math.random() * 100}%`,
-            animation: `bubbles ${8 + Math.random() * 15}s linear ${Math.random() * 8}s infinite`,
-            width: `${5 + Math.random() * 20}px`,
-            height: `${5 + Math.random() * 20}px`,
-          }}
+          key={bubble.id}
+          className="absolute bottom-0 rounded-full bg-white/20"
+          style={bubble.style}
         />
       ))}
 
