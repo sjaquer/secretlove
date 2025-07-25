@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,7 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, KeyRound } from 'lucide-react';
+import { Heart, KeyRound, LockKeyhole } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const formSchema = z.object({
   code: z.string().min(1, { message: 'El código no puede estar vacío.' }),
@@ -22,6 +24,7 @@ export function CodeGate() {
   const router = useRouter();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [revealClickCount, setRevealClickCount] = useState(0);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,12 +50,44 @@ export function CodeGate() {
     }
   }
 
+  const handleHeartClick = () => {
+    setRevealClickCount(prev => prev + 1);
+  };
+  
   return (
     <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm shadow-2xl">
       <CardHeader className="text-center">
-        <div className="mx-auto bg-primary/10 p-3 rounded-full mb-4 border border-primary/20">
-          <Heart className="h-10 w-10 text-primary" />
-        </div>
+        <Popover open={revealClickCount >= 5} onOpenChange={(isOpen) => !isOpen && setRevealClickCount(0)}>
+            <PopoverTrigger asChild>
+                <div 
+                    className="mx-auto bg-primary/10 p-3 rounded-full mb-4 border border-primary/20 cursor-pointer"
+                    onClick={handleHeartClick}
+                    title="Un secreto te espera..."
+                >
+                    <Heart className="h-10 w-10 text-primary" />
+                </div>
+            </PopoverTrigger>
+            <PopoverContent side="top" className="w-80">
+                <div className="grid gap-4">
+                    <div className="space-y-2">
+                        <h4 className="font-medium leading-none">Recuerdos Desbloqueados</h4>
+                        <p className="text-sm text-muted-foreground">
+                            Aquí están todos los secretos que hemos descubierto.
+                        </p>
+                    </div>
+                    <div className="grid gap-2">
+                        {Object.entries(secretCodes).map(([code, path]) => (
+                            <Link href={path} key={code} className="group grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-md p-2 transition-colors hover:bg-accent hover:text-accent-foreground">
+                                <LockKeyhole className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-mono text-sm">{code}</span>
+                                <Button variant="link" size="sm" className="h-auto p-0">Ir</Button>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </PopoverContent>
+        </Popover>
+
         <CardTitle className="font-headline text-3xl">Amor Secreto</CardTitle>
         <CardDescription>Un lugar especial solo para nosotros.</CardDescription>
       </CardHeader>
