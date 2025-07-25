@@ -14,6 +14,9 @@ export default {
         headline: ['var(--font-montserrat)', 'sans-serif'],
         code: ['monospace'],
       },
+      fontWeight: {
+        headline: '700',
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
