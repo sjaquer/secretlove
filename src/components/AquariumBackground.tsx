@@ -73,7 +73,7 @@ export function AquariumBackground() {
       
       {/* Parallax Layer 2 (Mid) */}
       <div style={parallaxStyle(30)} className="absolute inset-0">
-         <Image src="https://i.ibb.co/1pGCPtT/peznaranja.png" alt="Orange Fish School" width={200} height={200} data-ai-hint="orange fish school" className="absolute top-[20%] left-[15%] opacity-90 animate-[float-reverse_20s_ease-in-out_infinite]" />
+         <Image src="https://i.ibb.co/LXksXfV8/alga.pnghttps://i.ibb.co/kVj3Q23z/peznaranja.png" alt="Orange Fish School" width={200} height={200} data-ai-hint="orange fish school" className="absolute top-[20%] left-[15%] opacity-90 animate-[float-reverse_20s_ease-in-out_infinite]" />
          <Image src="https://i.ibb.co/RkWNVYs4/coralrosa.png" alt="Pink Coral" width={150} height={150} data-ai-hint="pink coral" className="absolute bottom-[5%] right-[5%] opacity-80 animate-[float_15s_ease-in-out_1s_infinite]" />
          <Image src="https://i.ibb.co/JWHSX4Qh/pezpayaso.png" alt="Clownfish" width={90} height={90} data-ai-hint="cartoon clownfish" className="absolute top-1/2 right-1/3 opacity-95 animate-[float_10s_ease-in-out_1s_infinite]" />
       </div>
