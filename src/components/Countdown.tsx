@@ -69,7 +69,7 @@ export function Countdown({ targetDate }: { targetDate: Date }) {
       ) : (
         <div className="text-center p-2 bg-accent/10 rounded-lg">
           <p className="text-sm text-accent-foreground">Un nuevo secreto te espera:</p>
-          <p className="font-bold text-lg text-accent tracking-widest animate-pulse">TAMMV</p>
+          <p className="font-bold text-lg text-accent tracking-widest animate-pulse">OTOÑO</p>
         </div>
       )}
     </div>
