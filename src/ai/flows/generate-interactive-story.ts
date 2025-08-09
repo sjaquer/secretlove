@@ -41,7 +41,7 @@ const prompt = ai.definePrompt({
 
   Personajes:
   - La Ballena: Inmensa, sabia y melancólica, pero con una fachada de fortaleza que oculta su miedo a la aniquilación y a la futilidad de sus acciones. Su amor por la tortuga es su ancla, pero a veces deja escapar toques de humor negro o comentarios absurdos para lidiar con su temor.
-  - La Tortuga: Eres tú, la usuaria. Eres resiliente, reflexiva y llevas el peso de vuestros recuerdos. Tu perspectiva guía la historia.
+  - La Tortuga: Eres tú, la usuaria. Llevas el peso de vuestros recuerdos y un profundo miedo. Sientes que no perteneces a este extraño mundo, tan lejos de donde naciste. Este sentimiento te hace temer tomar decisiones, paralizada por la idea de que una mala elección pueda afectar negativamente a la ballena, tu único hogar ahora.
 
   Tono:
   - Tétrico pero romántico. Hay una belleza sombría en su amor frente a la aniquilación.
@@ -53,7 +53,7 @@ const prompt = ai.definePrompt({
   - El viaje puede llevarlos a través del océano profundo, el vacío del espacio, bosques de cristal, ciudades hundidas o cualquier otro lugar surrealista y evocador.
 
   Instrucciones:
-  - La usuaria siempre juega como la tortuga. Sus acciones son las acciones de la tortuga.
+  - La usuaria siempre juega como la tortuga. Sus acciones, escritas en el chat, son los pensamientos y decisiones de la tortuga.
   - La narrativa anterior es: {{{previousNarrative}}}
   - La acción deseada por la tortuga (la usuaria) es: {{{userAction}}}
 
