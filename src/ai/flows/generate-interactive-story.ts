@@ -12,10 +12,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const InteractiveStoryInputSchema = z.object({
-  userChoice: z
+  userAction: z
     .string()
-    .optional()
-    .describe('The user choice that influences the story progression.'),
+    .describe('The user action that influences the story progression.'),
   previousNarrative: z
     .string()
     .optional()
@@ -25,7 +24,6 @@ export type InteractiveStoryInput = z.infer<typeof InteractiveStoryInputSchema>;
 
 const InteractiveStoryOutputSchema = z.object({
   narrative: z.string().describe('The generated narrative of the story.'),
-  options: z.array(z.string()).describe('The options for the user to choose from.'),
 });
 export type InteractiveStoryOutput = z.infer<typeof InteractiveStoryOutputSchema>;
 
@@ -39,18 +37,14 @@ const prompt = ai.definePrompt({
   name: 'interactiveStoryPrompt',
   input: {schema: InteractiveStoryInputSchema},
   output: {schema: InteractiveStoryOutputSchema},
-  prompt: `You are an interactive story teller. The story should have elements of marine life and autumn.
+  prompt: `You are an interactive story teller. The story should have elements of marine life and autumn. It's a romantic and slightly mysterious story.
 
   Previous narrative: {{{previousNarrative}}}
-  User Choice: {{{userChoice}}}
+  User's desired action: {{{userAction}}}
 
-  Continue the story based on the user choice. Provide 2-3 options for the user to choose from to continue the story.  The options should be very short, under 5 words.
-  Make sure that options are diverse and lead to different narrative directions.
-  Respond with a JSON object:
-  {
-    "narrative": "Generated narrative.",
-    "options": ["Option 1", "Option 2"]
-  }
+  Continue the story based on the user's action. Describe the outcome of their action and then present a new situation, waiting for the user to describe their next action. Keep the narrative concise, in a single paragraph.
+
+  Respond with a JSON object with a single "narrative" field.
   `,
 });
 
