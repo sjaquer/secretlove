@@ -37,14 +37,14 @@ const prompt = ai.definePrompt({
   name: 'interactiveStoryPrompt',
   input: {schema: InteractiveStoryInputSchema},
   output: {schema: InteractiveStoryOutputSchema},
-  prompt: `You are an interactive story teller. The story should have elements of marine life and autumn. It's a romantic and slightly mysterious story.
+  prompt: `Eres un narrador de historias interactivas. La historia debe tener elementos de vida marina y otoño. Es una historia romántica y ligeramente misteriosa.
 
-  Previous narrative: {{{previousNarrative}}}
-  User's desired action: {{{userAction}}}
+  Narrativa anterior: {{{previousNarrative}}}
+  Acción deseada por el usuario: {{{userAction}}}
 
-  Continue the story based on the user's action. Describe the outcome of their action and then present a new situation, waiting for the user to describe their next action. Keep the narrative concise, in a single paragraph.
+  Continúa la historia basándote en la acción del usuario. Describe el resultado de su acción y luego presenta una nueva situación, esperando que el usuario describa su próxima acción. Mantén la narrativa concisa, en un solo párrafo.
 
-  Respond with a JSON object with a single "narrative" field.
+  Responde con un objeto JSON con un único campo "narrative".
   `,
 });
 
