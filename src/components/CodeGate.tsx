@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -15,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Heart, KeyRound, LockKeyhole, ShieldQuestion } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Countdown } from './Countdown';
 
 const formSchema = z.object({
   code: z.string().min(1, { message: 'El código no puede estar vacío.' }),
@@ -28,6 +30,7 @@ export function CodeGate() {
   const [loading, setLoading] = useState(false);
   const [revealClickCount, setRevealClickCount] = useState(0);
   const [unlockedCodes, setUnlockedCodes] = useState<string[]>([]);
+  const [targetDate, setTargetDate] = useState<Date | null>(null);
 
   useEffect(() => {
     // This runs only on the client, after hydration
@@ -35,6 +38,9 @@ export function CodeGate() {
     if (storedCodes) {
       setUnlockedCodes(JSON.parse(storedCodes));
     }
+    const date = new Date();
+    date.setDate(date.getDate() + 3);
+    setTargetDate(date);
   }, []);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -76,6 +82,7 @@ export function CodeGate() {
   return (
     <Card className="w-full max-w-md bg-card/80 backdrop-blur-sm shadow-2xl">
       <CardHeader className="text-center">
+         {targetDate && <Countdown targetDate={targetDate} />}
         <Popover open={revealClickCount >= 5} onOpenChange={(isOpen) => !isOpen && setRevealClickCount(0)}>
             <PopoverTrigger asChild>
                 <div 

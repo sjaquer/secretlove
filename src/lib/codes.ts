@@ -1,8 +1,9 @@
+
 export const secretCodes: Record<string, string> = {
   'OTOÑO': '/story',
-  'SNOOPY': '/puzzle',
+  'AMOR': '/puzzle',
   'HORTENSIA': '/card',
   'CANCION': '/canciones',
-  'VIDEO': '/#', // Placeholder
+  'TAMMV': '/video', 
   'CARTA': '/#', // Placeholder
 };

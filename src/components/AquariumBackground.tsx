@@ -47,6 +47,7 @@ export function AquariumBackground() {
 
   return (
     <div className="absolute inset-0 -z-10 h-full w-full overflow-hidden bg-gradient-to-b from-[#005c9d] via-[#007cb0] to-[#2da8d1]">
+       <div className="absolute inset-0 bg-black/10 backdrop-blur-sm z-0"></div>
       {/* Light Rays */}
        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200%] h-[150%] bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.2)_0%,rgba(255,255,255,0)_60%)]"></div>
 
