@@ -17,8 +17,8 @@ export default function StoryPage() {
                 <Leaf className="w-8 h-8 text-accent" />
                 <Waves className="w-8 h-8 text-accent" />
             </div>
-            <h1 className="text-4xl font-headline text-primary">Nuestra Historia Interactiva</h1>
-            <p className="text-lg text-foreground/80 mt-2">Escribe el siguiente paso y veamos a dónde nos lleva la aventura.</p>
+            <h1 className="text-4xl font-headline text-primary">Miremos algo...</h1>
+            <p className="text-lg text-foreground/80 mt-2">Tienes rienda suelta para continuar la historia. No hay restricciones.</p>
         </div>
         <StoryPlayer />
         <Button asChild variant="link" className="mt-8 text-foreground/80">
