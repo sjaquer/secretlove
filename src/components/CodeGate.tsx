@@ -22,7 +22,8 @@ const formSchema = z.object({
   code: z.string().min(1, { message: 'El código no puede estar vacío.' }),
 });
 
-const LOCAL_STORAGE_KEY = 'unlocked_secret_codes';
+const UNLOCKED_CODES_KEY = 'unlocked_secret_codes';
+const COUNTDOWN_TARGET_DATE_KEY = 'countdown_target_date';
 
 export function CodeGate() {
   const router = useRouter();
@@ -34,13 +35,20 @@ export function CodeGate() {
 
   useEffect(() => {
     // This runs only on the client, after hydration
-    const storedCodes = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const storedCodes = localStorage.getItem(UNLOCKED_CODES_KEY);
     if (storedCodes) {
       setUnlockedCodes(JSON.parse(storedCodes));
     }
-    const date = new Date();
-    date.setDate(date.getDate() + 3);
-    setTargetDate(date);
+
+    const storedDate = localStorage.getItem(COUNTDOWN_TARGET_DATE_KEY);
+    if (storedDate) {
+      setTargetDate(new Date(storedDate));
+    } else {
+      const newTargetDate = new Date();
+      newTargetDate.setDate(newTargetDate.getDate() + 3);
+      localStorage.setItem(COUNTDOWN_TARGET_DATE_KEY, newTargetDate.toISOString());
+      setTargetDate(newTargetDate);
+    }
   }, []);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -59,7 +67,7 @@ export function CodeGate() {
       if (!unlockedCodes.includes(upperCaseCode)) {
         const newUnlockedCodes = [...unlockedCodes, upperCaseCode];
         setUnlockedCodes(newUnlockedCodes);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newUnlockedCodes));
+        localStorage.setItem(UNLOCKED_CODES_KEY, JSON.stringify(newUnlockedCodes));
       }
       router.push(secretCodes[upperCaseCode]);
     } else {
