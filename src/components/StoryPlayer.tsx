@@ -67,27 +67,27 @@ export function StoryPlayer() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-        <Card className="bg-card/80 backdrop-blur-sm shadow-2xl">
-            <CardHeader>
+    <div className="w-full max-w-2xl mx-auto h-full flex flex-col">
+        <Card className="bg-card/80 backdrop-blur-sm shadow-2xl flex flex-col flex-1">
+            <CardHeader className="p-3 sm:p-4 md:p-6 flex-shrink-0">
                 {loading && !story && (
-                    <div className="flex flex-col items-center justify-center space-y-4 min-h-[200px]">
-                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                        <p className="text-muted-foreground">Creando nuestro mundo...</p>
+                    <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4 min-h-[100px] sm:min-h-[120px]">
+                        <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 animate-spin text-primary" />
+                        <p className="text-muted-foreground text-xs sm:text-sm">Creando nuestro mundo...</p>
                     </div>
                 )}
             </CardHeader>
 
-            <CardContent className={cn("transition-opacity duration-500 min-h-[150px]", loading ? 'opacity-50' : 'opacity-100')}>
-                {error && <p className="text-destructive text-center">{error}</p>}
+            <CardContent className={cn("transition-opacity duration-500 min-h-[80px] sm:min-h-[100px] p-3 sm:p-4 md:p-6 flex-1 overflow-y-auto", loading ? 'opacity-50' : 'opacity-100')}>
+                {error && <p className="text-destructive text-center text-xs sm:text-sm">{error}</p>}
                 {story?.narrative && (
-                <p className="text-lg leading-relaxed whitespace-pre-wrap">{story.narrative}</p>
+                <p className="text-sm sm:text-base md:text-lg leading-relaxed whitespace-pre-wrap">{story.narrative}</p>
                 )}
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-4 justify-center pt-6">
+            <CardFooter className="flex flex-col gap-2 sm:gap-3 justify-center pt-2 sm:pt-3 p-3 sm:p-4 md:p-6 flex-shrink-0">
                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-2 sm:space-y-3">
                         <FormField
                         control={form.control}
                         name="userAction"
@@ -97,27 +97,27 @@ export function StoryPlayer() {
                                     <div className="relative">
                                         <Textarea
                                             placeholder="¿Qué quieres hacer ahora?"
-                                            className="pr-20"
+                                            className="pr-14 sm:pr-16 text-xs sm:text-sm min-h-[50px] sm:min-h-[60px] resize-none"
                                             disabled={loading}
                                             {...field}
                                         />
                                         <Button 
                                             type="submit" 
                                             size="icon" 
-                                            className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-14" 
+                                            className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 w-10 sm:h-8 sm:w-12" 
                                             disabled={loading}
                                         >
-                                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Send className="h-4 w-4" /> <span className='sr-only'>Enviar</span></>}
+                                            {loading ? <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" /> : <><Send className="h-3 w-3 sm:h-4 sm:w-4" /> <span className='sr-only'>Enviar</span></>}
                                         </Button>
                                     </div>
                                 </FormControl>
-                                <FormMessage />
+                                <FormMessage className="text-xs" />
                             </FormItem>
                         )}
                         />
                     </form>
                 </Form>
-                {!loading && <Button onClick={restartStory} variant="ghost" size="sm">Reiniciar Historia</Button>}
+                {!loading && <Button onClick={restartStory} variant="ghost" size="sm" className="text-xs sm:text-sm h-7 sm:h-8">Reiniciar Historia</Button>}
             </CardFooter>
         </Card>
     </div>

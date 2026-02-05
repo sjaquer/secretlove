@@ -7,20 +7,20 @@ export default function SpecialCard({ onClose }: { onClose?: () => void }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-      <div className="relative w-full max-w-lg bg-gradient-to-b from-[#fff5e6] to-[#ffdede] border-4 border-[#d4af37] p-6 rounded-lg shadow-2xl animate-cardEntry">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className="relative w-full max-w-sm sm:max-w-md bg-gradient-to-b from-[#fff5e6] to-[#ffdede] border-2 sm:border-4 border-[#d4af37] p-4 sm:p-6 rounded-lg shadow-2xl animate-cardEntry max-h-[90vh] overflow-y-auto">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-[#5b214b]">Carta Especial</h2>
-          <p className="mt-4 text-sm text-[#2b1b2b]">Gracias por completar el rompecabezas. Aquí tienes una carta hecha con cariño.</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#5b214b]">Carta Especial</h2>
+          <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-[#2b1b2b]">Gracias por completar el rompecabezas. Aquí tienes una carta hecha con cariño.</p>
 
-          <div className="mt-6 bg-white p-4 rounded-md shadow-inner">
-            <p className="italic text-sm">"A veces el amor llega en pequeñas piezas... gracias por armarlas conmigo."</p>
-            <p className="mt-3 text-xs text-[#5b214b]">— Tu admirador secreto</p>
+          <div className="mt-4 sm:mt-6 bg-white p-3 sm:p-4 rounded-md shadow-inner">
+            <p className="italic text-xs sm:text-sm">"A veces el amor llega en pequeñas piezas... gracias por armarlas conmigo."</p>
+            <p className="mt-2 sm:mt-3 text-xs text-[#5b214b]">— Tu admirador secreto</p>
           </div>
 
           <button
             onClick={() => onClose && onClose()}
-            className="mt-6 bg-[#d4af37] text-[#1a1025] px-4 py-2 rounded font-bold shadow"
+            className="mt-4 sm:mt-6 bg-[#d4af37] text-[#1a1025] px-4 py-2 rounded font-bold shadow text-sm sm:text-base"
           >
             Cerrar carta
           </button>
