@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, KeyRound, BookHeart, Music, Video, Mail, Puzzle, BookOpen, ArrowRight } from 'lucide-react';
+import { Heart, KeyRound, BookHeart, Music, Video, Mail, Puzzle, BookOpen, ArrowRight, Gamepad2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Countdown } from './Countdown';
 
@@ -33,6 +33,7 @@ const codeMetadata: Record<string, { description: string; icon: any }> = {
   'CANCION': { description: 'Playlist de canciones especiales', icon: Music },
   'TAMMV': { description: 'Video especial', icon: Video },
   'CARTA': { description: 'Carta de amor', icon: Mail },
+  'NUNTIUS AD DILECTUM MEUM': { description: 'La Búsqueda de los Tulipanes - Juego', icon: Gamepad2 },
 };
 
 export function CodeGate() {

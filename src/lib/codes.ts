@@ -6,4 +6,5 @@ export const secretCodes: Record<string, string> = {
   'CANCION': '/canciones',
   'TAMMV': '/video', 
   'CARTA': '/#', // Placeholder
+  'NUNTIUS AD DILECTUM MEUM': '/juego',
 };
