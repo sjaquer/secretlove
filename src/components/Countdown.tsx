@@ -52,26 +52,28 @@ export function Countdown({ targetDate }: { targetDate: Date }) {
       return;
     }
 
+    const labels: Record<keyof TimeLeft, string> = {
+      days: 'Días',
+      hours: 'Horas',
+      minutes: 'Min',
+      seconds: 'Seg'
+    };
+
     timerComponents.push(
-      <div key={key} className="flex flex-col items-center">
-        <span className="font-bold text-lg md:text-xl text-primary">{String(time[key]).padStart(2, '0')}</span>
-        <span className="text-xs text-muted-foreground">{key.charAt(0).toUpperCase() + key.slice(1)}</span>
+      <div key={key} className="flex flex-col items-center px-1 sm:px-2">
+        <span className="font-bold text-xl sm:text-2xl md:text-3xl text-red-600 tabular-nums">{String(time[key]).padStart(2, '0')}</span>
+        <span className="text-[10px] sm:text-xs font-medium text-pink-700 uppercase tracking-wider">{labels[key]}</span>
       </div>
     );
   });
 
   return (
-    <div className="mb-4">
+    <div className="mb-3 md:mb-4">
       {timerComponents.length ? (
-        <div className="flex justify-center gap-4 p-2 bg-primary/5 rounded-lg border border-primary/10">
+        <div className="flex justify-center gap-2 sm:gap-3 md:gap-4 p-2 sm:p-3 bg-gradient-to-r from-pink-50 to-red-50 rounded-xl border-2 border-pink-200 shadow-sm">
             {timerComponents}
         </div>
-      ) : (
-        <div className="text-center p-2 bg-accent/10 rounded-lg">
-          <p className="text-sm text-accent-foreground">Un nuevo secreto te espera:</p>
-          <p className="font-bold text-lg text-accent tracking-widest animate-pulse">OTOÑO</p>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

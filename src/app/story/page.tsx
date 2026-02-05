@@ -3,25 +3,25 @@ import { Leaf, Waves } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
+import { AquariumBackground } from "@/components/AquariumBackground";
 
 export default function StoryPage() {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
-      <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/4 left-1/4 h-32 w-32 bg-accent/10 rounded-full animate-pulse blur-2xl"></div>
-          <div className="absolute bottom-1/4 right-1/4 h-32 w-32 bg-primary/10 rounded-full animate-pulse delay-1000 blur-2xl"></div>
-      </div>
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4 sm:p-8">
-        <div className="text-center mb-8">
-            <div className="flex justify-center items-center gap-4 mb-2">
-                <Leaf className="w-8 h-8 text-accent" />
-                <Waves className="w-8 h-8 text-accent" />
+    <div className="relative h-screen w-full overflow-hidden">
+      <AquariumBackground />
+      <main className="relative z-10 flex flex-col items-center justify-center h-full p-3 sm:p-4 md:p-6 gap-3 md:gap-4">
+        <div className="text-center">
+            <div className="flex justify-center items-center gap-2 md:gap-3 mb-1">
+                <Leaf className="w-5 h-5 md:w-6 md:h-6 text-pink-300" />
+                <Waves className="w-5 h-5 md:w-6 md:h-6 text-pink-300" />
             </div>
-            <h1 className="text-4xl font-headline text-primary">Miremos algo...</h1>
-            <p className="text-lg text-foreground/80 mt-2">Tienes rienda suelta para continuar la historia. No hay restricciones.</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-headline text-white drop-shadow-lg">Miremos algo...</h1>
+            <p className="text-xs sm:text-sm md:text-base text-white/80 mt-1 max-w-md mx-auto">Tienes rienda suelta para continuar la historia. No hay restricciones.</p>
         </div>
-        <StoryPlayer />
-        <Button asChild variant="link" className="mt-8 text-foreground/80">
+        <div className="w-full max-w-2xl bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-3 md:p-5 max-h-[60vh] overflow-y-auto">
+          <StoryPlayer />
+        </div>
+        <Button asChild variant="ghost" className="text-white hover:bg-white/20 hover:text-white">
             <Link href="/" className="flex items-center gap-2">
                 <Home className="w-4 h-4" />
                 Volver al inicio
