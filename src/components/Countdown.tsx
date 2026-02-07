@@ -10,7 +10,7 @@ interface TimeLeft {
   seconds: number;
 }
 
-export function Countdown({ targetDate }: { targetDate: Date }) {
+export function Countdown({ targetDate, onComplete }: { targetDate: Date; onComplete?: () => void }) {
   const calculateTimeLeft = (): TimeLeft | {} => {
     const difference = +targetDate - +new Date();
     let timeLeft: TimeLeft | {} = {};
@@ -28,16 +28,26 @@ export function Countdown({ targetDate }: { targetDate: Date }) {
 
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
   const [isClient, setIsClient] = useState(false);
+  const [hasCompleted, setHasCompleted] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
+      const newTimeLeft = calculateTimeLeft();
+      setTimeLeft(newTimeLeft);
+      
+      // Detectar cuando el tiempo termina
+      if (Object.keys(newTimeLeft).length === 0 && !hasCompleted) {
+        setHasCompleted(true);
+        if (onComplete) {
+          onComplete();
+        }
+      }
     }, 1000);
 
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetDate]);
+  }, [targetDate, hasCompleted]);
 
   if (!isClient) {
     return null;

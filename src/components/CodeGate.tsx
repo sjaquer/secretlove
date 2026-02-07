@@ -24,6 +24,8 @@ const formSchema = z.object({
 
 const UNLOCKED_CODES_KEY = 'unlocked_secret_codes';
 const COUNTDOWN_TARGET_DATE_KEY = 'countdown_target_date';
+const COUNTDOWN_COMPLETED_KEY = 'countdown_completed';
+const GAME_CODE = 'NUNTIUS AD DILECTUM MEUM';
 
 // Metadata de cada código con descripción e ícono
 const codeMetadata: Record<string, { description: string; icon: any }> = {
@@ -43,6 +45,8 @@ export function CodeGate() {
   const [unlockedCodes, setUnlockedCodes] = useState<string[]>([]);
   const [targetDate, setTargetDate] = useState<Date | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [countdownCompleted, setCountdownCompleted] = useState(false);
+  const [showCodeReveal, setShowCodeReveal] = useState(false);
 
   useEffect(() => {
     // This runs only on the client, after hydration
@@ -51,10 +55,35 @@ export function CodeGate() {
       setUnlockedCodes(JSON.parse(storedCodes));
     }
 
+    // Verificar si la cuenta regresiva ya terminó
+    const completed = localStorage.getItem(COUNTDOWN_COMPLETED_KEY);
+    if (completed === 'true') {
+      setCountdownCompleted(true);
+    }
+
     // Fecha fija para el 14 de febrero de 2026
     const valentinesDay = new Date('2026-02-14T00:00:00');
     setTargetDate(valentinesDay);
+    
+    // Verificar si ya pasó la fecha
+    if (new Date() >= valentinesDay) {
+      setCountdownCompleted(true);
+      localStorage.setItem(COUNTDOWN_COMPLETED_KEY, 'true');
+    }
   }, []);
+
+  const handleCountdownComplete = () => {
+    setCountdownCompleted(true);
+    localStorage.setItem(COUNTDOWN_COMPLETED_KEY, 'true');
+    setShowCodeReveal(true);
+    
+    toast({
+      title: "¡Ha llegado el momento! 💝",
+      description: "El código secreto ha sido revelado...",
+      className: "bg-gradient-to-r from-pink-50 to-rose-50 border-pink-300",
+      duration: 5000,
+    });
+  };
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -97,7 +126,24 @@ export function CodeGate() {
   return (
     <Card className="w-full max-w-md bg-gradient-to-br from-white/95 to-pink-50/95 backdrop-blur-md shadow-2xl border-2 border-pink-200/50 hover:shadow-pink-200/50 transition-all duration-300">
       <CardHeader className="text-center space-y-4">
-         {targetDate && <Countdown targetDate={targetDate} />}
+         {targetDate && !countdownCompleted && <Countdown targetDate={targetDate} onComplete={handleCountdownComplete} />}
+         
+         {countdownCompleted && (
+           <div className={`transition-all duration-1000 ${showCodeReveal ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+             <div className="bg-gradient-to-br from-pink-100 via-rose-100 to-red-100 p-6 rounded-xl border-2 border-pink-300 shadow-lg mb-4">
+               <div className="text-center space-y-3">
+                 <div className="flex justify-center">
+                   <Gamepad2 className="h-12 w-12 text-pink-600 animate-bounce" />
+                 </div>
+                 <p className="text-sm font-semibold text-pink-800">¡El código ha sido revelado!</p>
+                 <div className="bg-white/80 px-4 py-3 rounded-lg border-2 border-pink-200">
+                   <p className="font-mono text-lg font-bold text-pink-600 tracking-wider">{GAME_CODE}</p>
+                 </div>
+                 <p className="text-xs text-pink-700">Úsalo para acceder al juego especial 🎮</p>
+               </div>
+             </div>
+           </div>
+         )}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
                 <div 

@@ -7,11 +7,13 @@ import Link from 'next/link';
 
 export default function JuegoPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [showMenu, setShowMenu] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
   const [flowersCollected, setFlowersCollected] = useState(0);
   const [message, setMessage] = useState('');
   const [isPaused, setIsPaused] = useState(false);
+  const [showPauseMenu, setShowPauseMenu] = useState(false);
   const gameStateRef = useRef({
     running: false,
     player: null as any,
@@ -27,11 +29,24 @@ export default function JuegoPage() {
     lastCheckpoint: { x: 50, y: 0 },
     isPausedForFlower: false,
     flowerPauseStartTime: 0,
-    messageTimeoutId: null as number | null
+    messageTimeoutId: null as number | null,
+    deathMessageShown: false
   });
 
+  const startGame = () => {
+    setShowMenu(false);
+    setGameStarted(true);
+    setShowPauseMenu(false);
+  };
+
+  const togglePause = () => {
+    if (gameWon) return;
+    setShowPauseMenu(!showPauseMenu);
+    setIsPaused(!isPaused);
+  };
+
   useEffect(() => {
-    if (!canvasRef.current || !gameStarted) return;
+    if (!canvasRef.current || !gameStarted || showMenu) return;
 
     const canvas = canvasRef.current;
     const rawCtx = canvas.getContext('2d');
@@ -686,15 +701,18 @@ export default function JuegoPage() {
             player.y = gameStateRef.current.lastCheckpoint.y; 
             player.velY = 0;
             player.velX = 0;
-            // show short-lived death message via showMessage
-            showMessage("¡Cuidado con el vacío!", { autoClear: true, duration: 1000 });
+            // show short-lived death message via showMessage (solo la primera vez)
+            if (!gameStateRef.current.deathMessageShown) {
+              showMessage("¡Cuidado con el vacío!", { autoClear: true, duration: 1000 });
+              gameStateRef.current.deathMessageShown = true;
+            }
          }
       } else if (gameStateRef.current.fadeOpacity > 0) {
          gameStateRef.current.fadeOpacity -= 0.05;
       }
       
       // 1. Update Logic (Skip physics update if fully faded out or paused)
-      if (gameStateRef.current.fadeOpacity < 1.0 && !gameStateRef.current.isPausedForFlower) {
+      if (gameStateRef.current.fadeOpacity < 1.0 && !gameStateRef.current.isPausedForFlower && !showPauseMenu) {
         player.update(map.width * TILE_SIZE, map);
         camera.follow(player, map.width * TILE_SIZE);
         map.update(player);
@@ -811,6 +829,16 @@ export default function JuegoPage() {
 
     // Event Listeners
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Tecla de pausa (Escape o P)
+      if (e.code === 'Escape' || e.code === 'KeyP') {
+        e.preventDefault();
+        togglePause();
+        return;
+      }
+      
+      // Si está en menú de pausa, no procesar otros controles
+      if (showPauseMenu) return;
+      
       // Despausar si está en pausa de flor (con tiempo de gracia de 800ms)
       if (gameStateRef.current.isPausedForFlower) {
         const timeSincePause = Date.now() - gameStateRef.current.flowerPauseStartTime;
@@ -858,7 +886,7 @@ export default function JuegoPage() {
         audioCtx.suspend();
       }
     };
-  }, [gameStarted]);
+  }, [gameStarted, showMenu, showPauseMenu]);
 
   const handleTouchControl = (direction: 'left' | 'right' | 'up', pressed: boolean) => {
     // Despausar si está en pausa de flor (con tiempo de gracia de 800ms)
@@ -892,8 +920,17 @@ export default function JuegoPage() {
         />
         
         {/* HUD */}
-        <div className="absolute top-0 left-0 w-full p-2 md:p-3 flex justify-between text-white pointer-events-none" style={{ textShadow: '2px 2px 0 #000', fontSize: '8px' }}>
-          <div className="md:text-[10px]">🌷 {flowersCollected} / 12</div>
+        <div className="absolute top-0 left-0 w-full p-2 md:p-3 flex justify-between text-white" style={{ textShadow: '2px 2px 0 #000', fontSize: '8px' }}>
+          <div className="md:text-[10px] pointer-events-none">🌷 {flowersCollected} / 12</div>
+          {gameStarted && !gameWon && (
+            <button
+              onClick={togglePause}
+              className="bg-white/20 hover:bg-white/30 border-2 border-white/60 px-2 py-1 md:px-3 md:py-1 text-[8px] md:text-[10px] rounded pointer-events-auto transition-all active:scale-95"
+              style={{ fontFamily: "'Press Start 2P', cursive" }}
+            >
+              {showPauseMenu ? '▶' : '⏸'}
+            </button>
+          )}
         </div>
 
         {/* Message Box */}
@@ -912,61 +949,109 @@ export default function JuegoPage() {
         )}
 
         {/* Mobile Controls - Mejorados */}
-        {gameStarted && !gameWon && (
-          <div className="lg:hidden absolute inset-0 pointer-events-none">
+        {gameStarted && !gameWon && !showPauseMenu && (
+          <div className="lg:hidden absolute inset-0 pointer-events-none" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
             <button
-              className="absolute bottom-3 left-3 w-14 h-14 md:w-16 md:h-16 bg-white/30 rounded-full border-2 border-white/80 flex items-center justify-center text-2xl pointer-events-auto active:bg-white/60 transition-all shadow-lg"
+              className="absolute bottom-3 left-3 w-14 h-14 md:w-16 md:h-16 bg-white/30 rounded-full border-2 border-white/80 flex items-center justify-center text-2xl pointer-events-auto active:bg-white/60 transition-all shadow-lg select-none"
               onTouchStart={(e) => { e.preventDefault(); handleTouchControl('left', true); }}
               onTouchEnd={(e) => { e.preventDefault(); handleTouchControl('left', false); }}
+              onTouchCancel={(e) => { e.preventDefault(); handleTouchControl('left', false); }}
               onMouseDown={() => handleTouchControl('left', true)}
               onMouseUp={() => handleTouchControl('left', false)}
+              onContextMenu={(e) => e.preventDefault()}
+              style={{ touchAction: 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
             >
               ←
             </button>
             <button
-              className="absolute bottom-3 left-20 md:left-24 w-14 h-14 md:w-16 md:h-16 bg-white/30 rounded-full border-2 border-white/80 flex items-center justify-center text-2xl pointer-events-auto active:bg-white/60 transition-all shadow-lg"
+              className="absolute bottom-3 left-20 md:left-24 w-14 h-14 md:w-16 md:h-16 bg-white/30 rounded-full border-2 border-white/80 flex items-center justify-center text-2xl pointer-events-auto active:bg-white/60 transition-all shadow-lg select-none"
               onTouchStart={(e) => { e.preventDefault(); handleTouchControl('right', true); }}
               onTouchEnd={(e) => { e.preventDefault(); handleTouchControl('right', false); }}
+              onTouchCancel={(e) => { e.preventDefault(); handleTouchControl('right', false); }}
               onMouseDown={() => handleTouchControl('right', true)}
               onMouseUp={() => handleTouchControl('right', false)}
+              onContextMenu={(e) => e.preventDefault()}
+              style={{ touchAction: 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
             >
               →
             </button>
             <button
-              className="absolute bottom-3 right-3 w-14 h-14 md:w-16 md:h-16 bg-[#d4af37]/40 rounded-full border-2 border-[#d4af37] flex items-center justify-center text-2xl pointer-events-auto active:bg-[#d4af37]/70 transition-all shadow-lg font-bold"
+              className="absolute bottom-3 right-3 w-14 h-14 md:w-16 md:h-16 bg-[#d4af37]/40 rounded-full border-2 border-[#d4af37] flex items-center justify-center text-2xl pointer-events-auto active:bg-[#d4af37]/70 transition-all shadow-lg font-bold select-none"
               onTouchStart={(e) => { e.preventDefault(); handleTouchControl('up', true); }}
               onTouchEnd={(e) => { e.preventDefault(); handleTouchControl('up', false); }}
+              onTouchCancel={(e) => { e.preventDefault(); handleTouchControl('up', false); }}
               onMouseDown={() => handleTouchControl('up', true)}
               onMouseUp={() => handleTouchControl('up', false)}
+              onContextMenu={(e) => e.preventDefault()}
+              style={{ touchAction: 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
             >
               ↑
             </button>
           </div>
         )}
 
-        {/* Start Screen */}
-        {!gameStarted && (
-          <div className="absolute inset-0 bg-[#1a1025]/97 flex flex-col items-center justify-center text-center p-4 z-50">
-            <h1 className="text-[#ff69b4] text-sm md:text-xl lg:text-2xl mb-2 md:mb-3" style={{ textShadow: '4px 4px #000' }}>
-              LA PRINCESA Y<br />LOS TULIPANES
-            </h1>
-            <p className="text-[#ccc] text-[7px] md:text-[8px] mb-2">Estilo Neo-Gótico Pixel Art</p>
-            <p className="text-[#eee] text-[7px] md:text-[8px] max-w-[90%] leading-relaxed mb-3 md:mb-4">
-              En un reino de sombras, busca los 12 tulipanes de luz.<br />
-              Cada flor guarda un secreto.<br />
-              Llévalas al Castillo Oscuro al final del camino.
-            </p>
-            <p className="text-[#d4af37] text-[7px] md:text-[8px] mb-3 md:mb-4">
-              <span className="hidden md:inline">CONTROLES: FLECHAS / WASD | ESPACIO para Saltar</span>
-              <span className="md:hidden">Usa los botones en pantalla para jugar</span>
-            </p>
-            <button
-              onClick={() => setGameStarted(true)}
-              className="bg-[#d4af37] text-[#1a1025] px-4 md:px-6 py-2 md:py-3 text-[10px] md:text-xs cursor-pointer border-none shadow-[4px_4px_0_#8b7222] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#8b7222] transition-all"
-              style={{ fontFamily: "'Press Start 2P', cursive" }}
-            >
-              COMENZAR AVENTURA
-            </button>
+        {/* Main Menu */}
+        {showMenu && (
+          <div className="absolute inset-0 bg-[#1a1025]/98 flex flex-col items-center justify-start md:justify-center text-center p-3 md:p-6 z-50 overflow-y-auto">
+            <div className="w-full max-w-2xl mt-2 md:mt-0">
+              <h1 className="text-[#d4af37] text-base md:text-2xl lg:text-3xl mb-4 md:mb-6 animate-pulse" style={{ textShadow: '3px 3px #000' }}>
+                LA BÚSQUEDA DE<br />LOS TULIPANES
+              </h1>
+              
+              {/* Historia */}
+              <div className="bg-[#2a1535]/80 border-2 border-[#d4af37]/50 p-3 md:p-4 mb-3 md:mb-4 rounded-lg">
+                <h2 className="text-[#ff69b4] text-[9px] md:text-xs mb-2 md:mb-3">✿ LA HISTORIA ✿</h2>
+                <p className="text-[#eee] text-[7px] md:text-[9px] leading-relaxed">
+                  En las profundidades de un reino olvidado, una valiente aventurera debe atravesar jardines sombríos,
+                  murallas antiguas y torres elevadas. Su misión: encontrar los 12 tulipanes místicos que guardan
+                  mensajes de sabiduría y amor. Cada flor que encuentres te revelará una verdad que te fortalecerá
+                  en tu camino hacia el Castillo Oscuro.
+                </p>
+              </div>
+
+              {/* Reglas */}
+              <div className="bg-[#2a1535]/80 border-2 border-[#d4af37]/50 p-3 md:p-4 mb-3 md:mb-4 rounded-lg">
+                <h2 className="text-[#ff69b4] text-[9px] md:text-xs mb-2 md:mb-3">✿ CÓMO JUGAR ✿</h2>
+                <div className="text-[#eee] text-[7px] md:text-[9px] leading-relaxed space-y-1 md:space-y-2">
+                  <p>🎮 <span className="hidden md:inline">Usa las FLECHAS o WASD para moverte</span><span className="md:hidden">Usa los botones en pantalla</span></p>
+                  <p>🌷 Explora y encuentra los 12 tulipanes escondidos</p>
+                  <p>💬 Cada tulipán te dará un mensaje especial</p>
+                  <p>🏰 Llega al Castillo Oscuro al final del camino</p>
+                  <p>⏸️ Presiona <span className="text-[#d4af37]">ESC o P</span> para pausar</p>
+                </div>
+              </div>
+
+              <button
+                onClick={startGame}
+                className="bg-[#d4af37] text-[#1a1025] px-5 md:px-8 py-2 md:py-3 text-[10px] md:text-sm cursor-pointer border-none shadow-[4px_4px_0_#8b7222] hover:shadow-[6px_6px_0_#8b7222] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#8b7222] transition-all font-bold"
+                style={{ fontFamily: "'Press Start 2P', cursive" }}
+              >
+                ⚔️ COMENZAR AVENTURA ⚔️
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Pause Menu */}
+        {showPauseMenu && !gameWon && (
+          <div className="absolute inset-0 bg-[#1a1025]/95 flex flex-col items-center justify-center text-center p-4 z-50">
+            <h2 className="text-[#d4af37] text-sm md:text-xl mb-4 md:mb-6" style={{ textShadow: '3px 3px #000' }}>⏸️ PAUSA ⏸️</h2>
+            <div className="space-y-3 md:space-y-4">
+              <button
+                onClick={togglePause}
+                className="bg-[#d4af37] text-[#1a1025] px-5 md:px-8 py-2 md:py-3 text-[10px] md:text-sm cursor-pointer border-none shadow-[4px_4px_0_#8b7222] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#8b7222] transition-all block w-full md:w-auto"
+                style={{ fontFamily: "'Press Start 2P', cursive" }}
+              >
+                ▶️ CONTINUAR
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-[#ff69b4] text-white px-5 md:px-8 py-2 md:py-3 text-[10px] md:text-sm cursor-pointer border-none shadow-[4px_4px_0_#8b2252] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_#8b2252] transition-all block w-full md:w-auto"
+                style={{ fontFamily: "'Press Start 2P', cursive" }}
+              >
+                🔄 REINICIAR
+              </button>
+            </div>
           </div>
         )}
 
