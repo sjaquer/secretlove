@@ -1,222 +1,386 @@
-// ===== BACKGROUND RENDERER =====
+// ===== BACKGROUND RENDERER – unique per level theme =====
 
-import { VIEWPORT_WIDTH, VIEWPORT_HEIGHT, TILE_SIZE, COLORS } from './constants';
+import { VIEWPORT_WIDTH, VIEWPORT_HEIGHT, THEME_COLORS } from './constants';
+import type { LevelTheme } from './types';
 import type { Camera } from './camera';
 
+interface Star { x: number; y: number; size: number; brightness: number; twinkleSpeed: number; }
+
 export class BackgroundRenderer {
-  // Pre-calculated star positions for consistency
-  private stars: { x: number; y: number; size: number; brightness: number }[] = [];
-  
-  constructor() {
-    // Generate stable star field
-    for (let i = 0; i < 60; i++) {
-      this.stars.push({
-        x: (i * 1237 + 421) % VIEWPORT_WIDTH,
-        y: (i * 653 + 178) % (VIEWPORT_HEIGHT * 0.6),
-        size: i % 3 === 0 ? 2 : 1,
-        brightness: 0.4 + (i % 5) * 0.15,
-      });
+  theme: LevelTheme = 'castle';
+  private stars: Star[] = [];
+  private particles: { x: number; y: number; vx: number; vy: number; life: number; maxLife: number }[] = [];
+
+  setTheme(theme: LevelTheme) {
+    this.theme = theme;
+    this.stars = [];
+    this.particles = [];
+
+    // Generate stars for outdoor levels
+    if (theme === 'rooftop' || theme === 'moon') {
+      const count = theme === 'moon' ? 200 : 120;
+      for (let i = 0; i < count; i++) {
+        this.stars.push({
+          x: Math.random() * 2000,
+          y: Math.random() * VIEWPORT_HEIGHT * 0.7,
+          size: Math.random() * 2 + 0.5,
+          brightness: Math.random(),
+          twinkleSpeed: 0.001 + Math.random() * 0.003,
+        });
+      }
+    }
+
+    // Desert particles (heat shimmer dots)
+    if (theme === 'desert') {
+      for (let i = 0; i < 30; i++) {
+        this.particles.push({
+          x: Math.random() * 2000, y: VIEWPORT_HEIGHT * 0.4 + Math.random() * VIEWPORT_HEIGHT * 0.4,
+          vx: Math.random() * 0.3 - 0.15, vy: -0.2 - Math.random() * 0.3,
+          life: Math.random() * 200, maxLife: 200,
+        });
+      }
+    }
+
+    // Swamp particles (fireflies)
+    if (theme === 'swamp') {
+      for (let i = 0; i < 25; i++) {
+        this.particles.push({
+          x: Math.random() * 2000, y: VIEWPORT_HEIGHT * 0.3 + Math.random() * VIEWPORT_HEIGHT * 0.5,
+          vx: Math.random() * 0.4 - 0.2, vy: Math.random() * 0.2 - 0.1,
+          life: Math.random() * 300, maxLife: 300,
+        });
+      }
+    }
+
+    // Moon particles (floating dust)
+    if (theme === 'moon') {
+      for (let i = 0; i < 20; i++) {
+        this.particles.push({
+          x: Math.random() * 2500, y: Math.random() * VIEWPORT_HEIGHT,
+          vx: Math.random() * 0.2 - 0.1, vy: -0.05 - Math.random() * 0.1,
+          life: Math.random() * 400, maxLife: 400,
+        });
+      }
     }
   }
 
   draw(ctx: CanvasRenderingContext2D, camera: Camera, time: number) {
-    const camX = camera.x;
-
-    if (camX < 150 * TILE_SIZE) {
-      this.drawDungeon(ctx, camX, time);
-    } else if (camX < 300 * TILE_SIZE) {
-      this.drawCastleWalls(ctx, camX, time);
-    } else if (camX < 450 * TILE_SIZE) {
-      this.drawSanctum(ctx, camX, time);
-    } else {
-      this.drawTower(ctx, camX, time);
+    switch (this.theme) {
+      case 'castle':  this.drawCastle(ctx, camera, time); break;
+      case 'rooftop': this.drawRooftop(ctx, camera, time); break;
+      case 'swamp':   this.drawSwamp(ctx, camera, time); break;
+      case 'desert':  this.drawDesert(ctx, camera, time); break;
+      case 'moon':    this.drawMoon(ctx, camera, time); break;
     }
   }
 
-  private drawDungeon(ctx: CanvasRenderingContext2D, camX: number, time: number) {
-    // Deep dungeon background
+  // ===== CASTLE: dark dungeon, torchlight glow =====
+  private drawCastle(ctx: CanvasRenderingContext2D, cam: Camera, time: number) {
+    // Gradient background (very dark)
     const grad = ctx.createLinearGradient(0, 0, 0, VIEWPORT_HEIGHT);
-    grad.addColorStop(0, '#080510');
-    grad.addColorStop(0.5, '#0d0a14');
-    grad.addColorStop(1, '#120a0a');
+    grad.addColorStop(0, '#0a0612');
+    grad.addColorStop(0.5, '#12081e');
+    grad.addColorStop(1, '#1a0c28');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
 
-    // Background stone walls (parallax)
-    ctx.fillStyle = '#0f0c16';
+    // Parallax background stone walls
+    const parallax = cam.x * 0.15;
+    ctx.fillStyle = '#1a1228';
     for (let i = 0; i < 30; i++) {
-      let wx = (i * 60 - camX * 0.15) % (VIEWPORT_WIDTH + 200);
-      if (wx < -60) wx += VIEWPORT_WIDTH + 260;
-      const wy = 20 + (i * 37) % 300;
-      ctx.fillRect(wx, wy, 50, 30);
-      ctx.fillStyle = '#0a0812';
-      ctx.fillRect(wx + 1, wy + 14, 49, 2);
-      ctx.fillStyle = '#0f0c16';
+      const bx = (i * 70 - parallax) % (VIEWPORT_WIDTH + 100) - 50;
+      const by = 50 + (i * 37) % (VIEWPORT_HEIGHT - 100);
+      ctx.fillRect(bx, by, 40 + (i % 3) * 20, 20 + (i % 2) * 10);
     }
 
-    // Dripping water effect
-    for (let i = 0; i < 5; i++) {
-      const dx = (i * 180 - camX * 0.3) % VIEWPORT_WIDTH;
-      const dropY = (time / 10 + i * 123) % VIEWPORT_HEIGHT;
-      ctx.fillStyle = 'rgba(100, 150, 255, 0.3)';
-      ctx.fillRect(dx, dropY, 2, 6);
-    }
-
-    // Fog at the bottom
-    const fogGrad = ctx.createLinearGradient(0, VIEWPORT_HEIGHT - 80, 0, VIEWPORT_HEIGHT);
-    fogGrad.addColorStop(0, 'rgba(20, 15, 30, 0)');
-    fogGrad.addColorStop(1, 'rgba(20, 15, 30, 0.6)');
-    ctx.fillStyle = fogGrad;
+    // Floor lava glow (subtle)
+    ctx.save();
+    ctx.globalAlpha = 0.08 + Math.sin(time * 0.002) * 0.03;
+    const lavaGlow = ctx.createLinearGradient(0, VIEWPORT_HEIGHT - 80, 0, VIEWPORT_HEIGHT);
+    lavaGlow.addColorStop(0, '#00000000');
+    lavaGlow.addColorStop(1, '#ff440044');
+    ctx.fillStyle = lavaGlow;
     ctx.fillRect(0, VIEWPORT_HEIGHT - 80, VIEWPORT_WIDTH, 80);
+    ctx.restore();
+
+    // Dust motes
+    ctx.fillStyle = '#ffffff08';
+    for (let i = 0; i < 8; i++) {
+      const dx = (time * 0.01 + i * 100) % VIEWPORT_WIDTH;
+      const dy = (Math.sin(time * 0.001 + i) * 30) + VIEWPORT_HEIGHT * 0.4;
+      ctx.fillRect(dx, dy, 2, 2);
+    }
   }
 
-  private drawCastleWalls(ctx: CanvasRenderingContext2D, camX: number, time: number) {
-    // Night sky
+  // ===== ROOFTOP: night sky, moon, stars =====
+  private drawRooftop(ctx: CanvasRenderingContext2D, cam: Camera, time: number) {
+    // Night sky gradient
     const grad = ctx.createLinearGradient(0, 0, 0, VIEWPORT_HEIGHT);
-    grad.addColorStop(0, '#08081e');
-    grad.addColorStop(0.4, '#101030');
-    grad.addColorStop(1, '#1a1040');
+    grad.addColorStop(0, '#050818');
+    grad.addColorStop(0.4, '#0c1430');
+    grad.addColorStop(1, '#1a2850');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
 
-    // Stars with twinkle
-    this.stars.forEach((star, i) => {
-      const twinkle = Math.sin(time / 300 + i * 0.7) * 0.3 + star.brightness;
-      ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, twinkle)})`;
-      ctx.fillRect(star.x, star.y, star.size, star.size);
-    });
+    // Stars with twinkling
+    for (const s of this.stars) {
+      const sx = (s.x - cam.x * 0.05) % (VIEWPORT_WIDTH + 100) - 50;
+      const alpha = 0.3 + Math.sin(time * s.twinkleSpeed + s.brightness * 10) * 0.4 + s.brightness * 0.3;
+      ctx.fillStyle = `rgba(255, 255, 240, ${Math.max(0, Math.min(1, alpha))})`;
+      ctx.fillRect(sx, s.y, s.size, s.size);
+    }
 
     // Moon
-    ctx.save();
-    ctx.fillStyle = '#fffacc';
-    ctx.shadowBlur = 40;
-    ctx.shadowColor = '#fffacc';
+    const moonX = VIEWPORT_WIDTH * 0.75 - cam.x * 0.02;
+    const moonY = 50;
+    ctx.fillStyle = '#e8e0c8';
     ctx.beginPath();
-    ctx.arc(650, 60, 25, 0, Math.PI * 2);
+    ctx.arc(moonX, moonY, 30, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowBlur = 0;
-    // Moon crater
-    ctx.fillStyle = '#eee8aa';
-    ctx.fillRect(642, 54, 4, 4);
-    ctx.fillRect(656, 64, 3, 3);
+    // Craters
+    ctx.fillStyle = '#d0c8b0';
+    ctx.beginPath();
+    ctx.arc(moonX - 8, moonY - 5, 5, 0, Math.PI * 2);
+    ctx.arc(moonX + 10, moonY + 8, 4, 0, Math.PI * 2);
+    ctx.arc(moonX + 3, moonY - 10, 3, 0, Math.PI * 2);
+    ctx.fill();
+    // Moon glow
+    ctx.save();
+    ctx.globalAlpha = 0.06;
+    const moonGlow = ctx.createRadialGradient(moonX, moonY, 30, moonX, moonY, 100);
+    moonGlow.addColorStop(0, '#ffffcc');
+    moonGlow.addColorStop(1, '#00000000');
+    ctx.fillStyle = moonGlow;
+    ctx.fillRect(moonX - 100, moonY - 100, 200, 200);
     ctx.restore();
 
-    // Distant castle silhouettes (parallax)
-    ctx.fillStyle = '#0d0d28';
+    // Distant city silhouette
+    ctx.fillStyle = '#0a0e1a';
+    const sil = cam.x * 0.08;
+    for (let i = 0; i < 20; i++) {
+      const bx = (i * 60 - sil) % (VIEWPORT_WIDTH + 100) - 50;
+      const bh = 30 + (i * 17) % 60;
+      ctx.fillRect(bx, VIEWPORT_HEIGHT - bh - 20, 35, bh + 20);
+    }
+
+    // Wind lines
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
     for (let i = 0; i < 4; i++) {
-      let bx = (i * 250 - camX * 0.05) % (VIEWPORT_WIDTH + 400);
-      if (bx < -120) bx += VIEWPORT_WIDTH + 520;
-      // Tower shape
-      ctx.fillRect(bx, 200, 30, 250);
-      ctx.fillRect(bx + 50, 240, 60, 210);
-      ctx.fillRect(bx + 40, 230, 10, 10);
-      // Battlement
-      ctx.fillRect(bx - 5, 190, 10, 14);
-      ctx.fillRect(bx + 25, 190, 10, 14);
-    }
-
-    // Ground mist
-    for (let i = 0; i < 8; i++) {
-      const mx = (i * 120 + Math.sin(time / 800 + i) * 20 - camX * 0.2) % VIEWPORT_WIDTH;
-      ctx.fillStyle = 'rgba(30, 20, 50, 0.4)';
-      ctx.fillRect(mx, VIEWPORT_HEIGHT - 40, 80, 40);
+      const wx = ((time * 0.1 + i * 200) % (VIEWPORT_WIDTH + 200)) - 100;
+      const wy = 100 + i * 60;
+      ctx.beginPath();
+      ctx.moveTo(wx, wy);
+      ctx.lineTo(wx + 80, wy - 3);
+      ctx.stroke();
     }
   }
 
-  private drawSanctum(ctx: CanvasRenderingContext2D, camX: number, time: number) {
-    // Deep dark interior
+  // ===== SWAMP: murky green, fog, vines =====
+  private drawSwamp(ctx: CanvasRenderingContext2D, cam: Camera, time: number) {
+    // Dark green gradient
     const grad = ctx.createLinearGradient(0, 0, 0, VIEWPORT_HEIGHT);
-    grad.addColorStop(0, '#0a0610');
-    grad.addColorStop(0.5, '#15101f');
-    grad.addColorStop(1, '#1a0a0a');
+    grad.addColorStop(0, '#060e06');
+    grad.addColorStop(0.5, '#0a1a0a');
+    grad.addColorStop(1, '#0e2a0e');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
 
-    // Background pillars (parallax, slow)
-    ctx.fillStyle = '#0e0a15';
-    for (let i = 0; i < 8; i++) {
-      let px = (i * 150 - camX * 0.08) % (VIEWPORT_WIDTH + 200);
-      if (px < -50) px += VIEWPORT_WIDTH + 250;
-      ctx.fillRect(px, 0, 40, VIEWPORT_HEIGHT);
-      // Pillar capital
-      ctx.fillStyle = '#12101a';
-      ctx.fillRect(px - 5, 40, 50, 15);
-      ctx.fillStyle = '#0e0a15';
+    // Background trees (parallax)
+    const parallax = cam.x * 0.1;
+    ctx.fillStyle = '#0a150a';
+    for (let i = 0; i < 15; i++) {
+      const tx = (i * 100 - parallax) % (VIEWPORT_WIDTH + 200) - 100;
+      const th = 80 + (i * 23) % 80;
+      // Trunk
+      ctx.fillRect(tx + 10, VIEWPORT_HEIGHT - th, 8, th);
+      // Canopy
+      ctx.beginPath();
+      ctx.arc(tx + 14, VIEWPORT_HEIGHT - th - 10, 25, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    // Stained glass window (far background)
-    const windowX = 400 - (camX * 0.05) % 800;
-    if (windowX > -100 && windowX < VIEWPORT_WIDTH + 100) {
-      // Window frame
-      ctx.fillStyle = '#1a1525';
-      ctx.fillRect(windowX, 20, 60, 100);
-      // Glass panels
-      const wGlow = Math.sin(time / 600) * 0.1 + 0.3;
-      ctx.fillStyle = `rgba(100, 50, 150, ${wGlow})`;
-      ctx.fillRect(windowX + 4, 24, 24, 44);
-      ctx.fillStyle = `rgba(200, 50, 100, ${wGlow})`;
-      ctx.fillRect(windowX + 32, 24, 24, 44);
-      ctx.fillStyle = `rgba(50, 80, 180, ${wGlow})`;
-      ctx.fillRect(windowX + 4, 72, 52, 44);
-      // Dividers
-      ctx.fillStyle = '#0a0610';
-      ctx.fillRect(windowX + 28, 20, 4, 100);
-      ctx.fillRect(windowX, 68, 60, 4);
+    // Fireflies
+    for (const p of this.particles) {
+      p.x += p.vx + Math.sin(time * 0.001 + p.life) * 0.3;
+      p.y += p.vy + Math.cos(time * 0.001 + p.life * 0.7) * 0.2;
+      p.life++;
+      if (p.life > p.maxLife) {
+        p.life = 0;
+        p.x = Math.random() * 2000;
+        p.y = VIEWPORT_HEIGHT * 0.3 + Math.random() * VIEWPORT_HEIGHT * 0.4;
+      }
+      const alpha = Math.sin(p.life / p.maxLife * Math.PI) * 0.7;
+      const sx = (p.x - cam.x * 0.3) % (VIEWPORT_WIDTH + 40) - 20;
+      ctx.fillStyle = `rgba(150, 255, 100, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(sx, p.y, 2, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    // Lava glow from below
-    const lavaGlowIntensity = Math.sin(time / 400) * 0.05 + 0.1;
-    const lavaGrad = ctx.createLinearGradient(0, VIEWPORT_HEIGHT - 100, 0, VIEWPORT_HEIGHT);
-    lavaGrad.addColorStop(0, 'rgba(180, 50, 0, 0)');
-    lavaGrad.addColorStop(1, `rgba(180, 50, 0, ${lavaGlowIntensity})`);
-    ctx.fillStyle = lavaGrad;
-    ctx.fillRect(0, VIEWPORT_HEIGHT - 100, VIEWPORT_WIDTH, 100);
-  }
-
-  private drawTower(ctx: CanvasRenderingContext2D, camX: number, time: number) {
-    // Dramatic starry sky gradient
-    const grad = ctx.createLinearGradient(0, 0, 0, VIEWPORT_HEIGHT);
-    grad.addColorStop(0, '#000015');
-    grad.addColorStop(0.3, '#0a0a30');
-    grad.addColorStop(0.7, '#201040');
-    grad.addColorStop(1, '#300a20');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
-
-    // Stars with twinkle
-    this.stars.forEach((star, i) => {
-      const twinkle = Math.sin(time / 200 + i * 1.3) * 0.3 + star.brightness;
-      ctx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, twinkle)})`;
-      ctx.fillRect(star.x, star.y, star.size, star.size);
-    });
-
-    // Large moon with window bars
+    // Ground fog
     ctx.save();
-    ctx.fillStyle = '#fffabc';
-    ctx.shadowBlur = 50;
-    ctx.shadowColor = '#fffabc';
+    ctx.globalAlpha = 0.15 + Math.sin(time * 0.001) * 0.05;
+    const fog = ctx.createLinearGradient(0, VIEWPORT_HEIGHT - 100, 0, VIEWPORT_HEIGHT);
+    fog.addColorStop(0, '#00000000');
+    fog.addColorStop(1, '#2a4a2a');
+    ctx.fillStyle = fog;
+    ctx.fillRect(0, VIEWPORT_HEIGHT - 100, VIEWPORT_WIDTH, 100);
+    ctx.restore();
+  }
+
+  // ===== DESERT: sand, heat, pyramids =====
+  private drawDesert(ctx: CanvasRenderingContext2D, cam: Camera, time: number) {
+    // Warm sky gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, VIEWPORT_HEIGHT);
+    grad.addColorStop(0, '#1a1000');
+    grad.addColorStop(0.3, '#3a2010');
+    grad.addColorStop(0.6, '#5a3818');
+    grad.addColorStop(1, '#7a5030');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+
+    // Sun
+    const sunX = VIEWPORT_WIDTH * 0.3 - cam.x * 0.01;
+    ctx.fillStyle = '#ff8800';
     ctx.beginPath();
-    ctx.arc(680, 70, 45, 0, Math.PI * 2);
+    ctx.arc(sunX, 60, 35, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowBlur = 0;
-    // Moon details
-    ctx.fillStyle = '#eee8a0';
-    ctx.fillRect(665, 58, 6, 6);
-    ctx.fillRect(688, 72, 4, 4);
-    ctx.fillRect(675, 82, 3, 3);
-    // Window bars over moon
-    ctx.fillStyle = '#201040';
-    ctx.fillRect(676, 25, 8, 90);
-    ctx.fillRect(635, 66, 90, 8);
+    ctx.fillStyle = '#ffaa22';
+    ctx.beginPath();
+    ctx.arc(sunX, 60, 25, 0, Math.PI * 2);
+    ctx.fill();
+    // Sun glow
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    const sunGlow = ctx.createRadialGradient(sunX, 60, 35, sunX, 60, 150);
+    sunGlow.addColorStop(0, '#ffaa00');
+    sunGlow.addColorStop(1, '#00000000');
+    ctx.fillStyle = sunGlow;
+    ctx.fillRect(sunX - 150, -90, 300, 300);
     ctx.restore();
 
-    // Distant floating particles (magic)
-    for (let i = 0; i < 15; i++) {
-      const px = (i * 73 + Math.sin(time / 400 + i * 2) * 30) % VIEWPORT_WIDTH;
-      const py = (i * 41 + Math.cos(time / 500 + i) * 20) % VIEWPORT_HEIGHT;
-      const alpha = Math.sin(time / 300 + i * 0.8) * 0.3 + 0.3;
-      ctx.fillStyle = `rgba(200, 150, 255, ${Math.max(0, alpha)})`;
-      ctx.fillRect(px, py, 2, 2);
+    // Distant pyramids (parallax)
+    const parallax = cam.x * 0.06;
+    ctx.fillStyle = '#4a3420';
+    // Pyramid 1
+    const p1x = 200 - parallax;
+    ctx.beginPath();
+    ctx.moveTo(p1x, VIEWPORT_HEIGHT - 50);
+    ctx.lineTo(p1x + 60, VIEWPORT_HEIGHT - 130);
+    ctx.lineTo(p1x + 120, VIEWPORT_HEIGHT - 50);
+    ctx.fill();
+    // Pyramid 2
+    const p2x = 500 - parallax;
+    ctx.fillStyle = '#3a2818';
+    ctx.beginPath();
+    ctx.moveTo(p2x, VIEWPORT_HEIGHT - 50);
+    ctx.lineTo(p2x + 80, VIEWPORT_HEIGHT - 160);
+    ctx.lineTo(p2x + 160, VIEWPORT_HEIGHT - 50);
+    ctx.fill();
+
+    // Heat shimmer particles
+    for (const p of this.particles) {
+      p.y += p.vy;
+      p.x += Math.sin(time * 0.002 + p.life * 0.1) * 0.3;
+      p.life++;
+      if (p.life > p.maxLife) {
+        p.life = 0;
+        p.y = VIEWPORT_HEIGHT * 0.5 + Math.random() * VIEWPORT_HEIGHT * 0.3;
+        p.x = Math.random() * 2000;
+      }
+      const sx = (p.x - cam.x * 0.2) % (VIEWPORT_WIDTH + 40) - 20;
+      ctx.fillStyle = `rgba(255, 200, 100, ${0.08 * Math.sin(p.life / p.maxLife * Math.PI)})`;
+      ctx.fillRect(sx, p.y, 20, 1);
     }
+
+    // Sand dunes (foreground parallax)
+    const sp = cam.x * 0.12;
+    ctx.fillStyle = '#6a4828';
+    ctx.beginPath();
+    ctx.moveTo(0, VIEWPORT_HEIGHT);
+    for (let x = 0; x <= VIEWPORT_WIDTH; x += 20) {
+      ctx.lineTo(x, VIEWPORT_HEIGHT - 15 + Math.sin((x + sp) * 0.015) * 8);
+    }
+    ctx.lineTo(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+    ctx.fill();
+  }
+
+  // ===== MOON: starfield, earth, low gravity feel =====
+  private drawMoon(ctx: CanvasRenderingContext2D, cam: Camera, time: number) {
+    // Deep space gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, VIEWPORT_HEIGHT);
+    grad.addColorStop(0, '#010108');
+    grad.addColorStop(0.5, '#030316');
+    grad.addColorStop(1, '#060620');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+
+    // Stars
+    for (const s of this.stars) {
+      const sx = (s.x - cam.x * 0.03) % (VIEWPORT_WIDTH + 100) - 50;
+      const alpha = 0.4 + Math.sin(time * s.twinkleSpeed + s.brightness * 10) * 0.3 + s.brightness * 0.3;
+      ctx.fillStyle = `rgba(200, 200, 255, ${Math.max(0, Math.min(1, alpha))})`;
+      ctx.fillRect(sx, s.y, s.size, s.size);
+    }
+
+    // Earth in the sky
+    const earthX = VIEWPORT_WIDTH * 0.6 - cam.x * 0.015;
+    const earthY = 70;
+    // Earth glow
+    ctx.save();
+    ctx.globalAlpha = 0.05;
+    const eg = ctx.createRadialGradient(earthX, earthY, 20, earthX, earthY, 70);
+    eg.addColorStop(0, '#4488ff');
+    eg.addColorStop(1, '#00000000');
+    ctx.fillStyle = eg;
+    ctx.fillRect(earthX - 70, earthY - 70, 140, 140);
+    ctx.restore();
+    // Earth body
+    ctx.fillStyle = '#2244aa';
+    ctx.beginPath();
+    ctx.arc(earthX, earthY, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#44aa44';
+    ctx.beginPath();
+    ctx.arc(earthX - 5, earthY - 3, 7, 0.3, 2);
+    ctx.arc(earthX + 8, earthY + 5, 5, 0, 1.5);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff33';
+    ctx.beginPath();
+    ctx.arc(earthX - 8, earthY - 8, 5, 0, Math.PI * 2);
+    ctx.arc(earthX + 3, earthY + 10, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Floating cosmic dust
+    for (const p of this.particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life++;
+      if (p.life > p.maxLife) {
+        p.life = 0;
+        p.x = Math.random() * 2500;
+        p.y = Math.random() * VIEWPORT_HEIGHT;
+      }
+      const sx = (p.x - cam.x * 0.15) % (VIEWPORT_WIDTH + 40) - 20;
+      const alpha = Math.sin(p.life / p.maxLife * Math.PI) * 0.3;
+      ctx.fillStyle = `rgba(180, 160, 255, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(sx, p.y, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Nebula haze
+    ctx.save();
+    ctx.globalAlpha = 0.04;
+    ctx.fillStyle = '#6644aa';
+    ctx.beginPath();
+    ctx.ellipse(300 - cam.x * 0.02, 180, 200, 60, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#4466cc';
+    ctx.beginPath();
+    ctx.ellipse(550 - cam.x * 0.025, 120, 160, 50, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 }

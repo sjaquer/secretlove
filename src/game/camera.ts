@@ -1,16 +1,19 @@
 // ===== CAMERA =====
 
+import { VIEWPORT_WIDTH, VIEWPORT_HEIGHT, TILE_SIZE } from './constants';
+
 export class Camera {
   x = 0;
-  y = 0;
 
-  constructor(public width: number, public height: number) {}
+  constructor(private vw: number = VIEWPORT_WIDTH, private vh: number = VIEWPORT_HEIGHT) {}
 
-  follow(target: { x: number; y: number }, mapWidth: number) {
-    // Smooth horizontal follow
-    const targetX = target.x - this.width / 2;
+  follow(target: { x: number; y: number; width: number }, mapPixelWidth: number) {
+    const targetX = target.x + target.width / 2 - this.vw / 2;
     this.x += (targetX - this.x) * 0.1;
-    if (this.x < 0) this.x = 0;
-    if (this.x + this.width > mapWidth) this.x = mapWidth - this.width;
+    this.x = Math.max(0, Math.min(this.x, mapPixelWidth - this.vw));
+  }
+
+  reset() {
+    this.x = 0;
   }
 }

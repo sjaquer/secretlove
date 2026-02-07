@@ -1,5 +1,11 @@
 // ===== GAME TYPES =====
 
+export type LevelTheme = 'castle' | 'rooftop' | 'swamp' | 'desert' | 'moon';
+
+export type EnemyType = 'slime' | 'bat' | 'frog' | 'scorpion' | 'alien';
+
+export type PlayerAnimState = 'idle' | 'walk' | 'jump' | 'fall' | 'stomp' | 'death';
+
 export interface Inputs {
   left: boolean;
   right: boolean;
@@ -14,23 +20,17 @@ export interface Flower {
   animOffset: number;
 }
 
-export interface CastleObj {
+export interface EnemySpawn {
   x: number;
   y: number;
-  width: number;
-  height: number;
+  type: EnemyType;
+  patrolLeft: number;
+  patrolRight: number;
 }
 
 export interface TorchObj {
   x: number;
   y: number;
-  side: 'left' | 'right'; // which side of wall
-}
-
-export interface LavaPool {
-  x: number;
-  y: number;
-  width: number;
 }
 
 export interface Checkpoint {
@@ -38,31 +38,40 @@ export interface Checkpoint {
   y: number;
 }
 
-export interface DecoChain {
+export interface Portal {
   x: number;
   y: number;
-  length: number;
+  active: boolean;
 }
 
-export interface Banner {
-  x: number;
-  y: number;
-  color: string;
+export interface LevelData {
+  width: number;
+  height: number;
+  tiles: Uint8Array;
+  startX: number;
+  startY: number;
+  portalX: number;
+  portalY: number;
+  enemies: EnemySpawn[];
+  flowers: { x: number; y: number }[];
+  torches: TorchObj[];
+  checkpoints: Checkpoint[];
+}
+
+export interface LevelDef {
+  id: number;
+  name: string;
+  subtitle: string;
+  theme: LevelTheme;
+  gravity: number;
+  timeLimit: number;
+  build: () => LevelData;
 }
 
 export interface IMapAccessor {
   width: number;
   height: number;
   getTile(x: number, y: number): number;
-}
-
-export interface GameCallbacks {
-  onFlowerCollected: (total: number) => void;
-  onMessage: (text: string, opts?: { autoClear?: boolean; duration?: number }) => void;
-  onWin: (flowersCount: number) => void;
-  onDeath: () => void;
-  isPausedForFlower: () => boolean;
-  isGamePaused: () => boolean;
 }
 
 export interface GameState {
@@ -74,4 +83,22 @@ export interface GameState {
   isPausedForFlower: boolean;
   flowerPauseStartTime: number;
   deathMessageShown: boolean;
+  currentLevel: number;
+  lives: number;
+  timeRemaining: number;
+  lastTimeTick: number;
+  totalFlowers: number;
+  score: number;
+  levelTransitioning: boolean;
+  enemiesKilled: number;
+}
+
+export interface LevelMusicDef {
+  bpm: number;
+  melodyType: OscillatorType;
+  bassType: OscillatorType;
+  melodyGain: number;
+  bassGain: number;
+  melody: number[];
+  bass: number[];
 }
