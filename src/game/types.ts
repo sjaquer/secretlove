@@ -91,6 +91,8 @@ export interface GameState {
   score: number;
   levelTransitioning: boolean;
   enemiesKilled: number;
+  levelStartFlowers?: number;
+  levelStartEnemies?: number;
 }
 
 export interface LevelMusicDef {

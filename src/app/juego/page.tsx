@@ -17,6 +17,7 @@ export default function JuegoPage() {
   const [showMenu, setShowMenu] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [showRecap, setShowRecap] = useState(false);
   const [flowersCollected, setFlowersCollected] = useState(0);
   const [message, setMessage] = useState('');
   const [isPaused, setIsPaused] = useState(false);
@@ -27,6 +28,15 @@ export default function JuegoPage() {
   const [timeRemaining, setTimeRemaining] = useState(150);
   const [score, setScore] = useState(0);
   const [enemiesKilled, setEnemiesKilled] = useState(0);
+  
+  // Level-by-level stats tracking
+  const levelStatsRef = useRef<Array<{
+    level: number;
+    flowers: number;
+    enemies: number;
+    timeBonus: number;
+    completed: boolean;
+  }>>([]);
 
   const msgTimeoutRef = useRef<number | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -100,12 +110,27 @@ export default function JuegoPage() {
         state.levelTransitioning = true;
         audio.stopMusic();
         audio.playSound('portal');
+        
+        // Save level stats
+        const levelFlowers = state.totalFlowers - (state.levelStartFlowers || 0);
+        const levelEnemies = state.enemiesKilled - (state.levelStartEnemies || 0);
+        const timeBonus = Math.max(0, state.timeRemaining * 10);
+        state.score += timeBonus;
+        
+        levelStatsRef.current[levelIdx] = {
+          level: levelIdx + 1,
+          flowers: levelFlowers,
+          enemies: levelEnemies,
+          timeBonus,
+          completed: true,
+        };
 
         if (levelIdx >= LEVELS.length - 1) {
-          // Game complete!
+          // Game complete! → Show recap first
           state.running = false;
           audio.playSound('win');
-          setGameWon(true);
+          syncUI(state);
+          setShowRecap(true);
         } else {
           // Show next level intro
           setShowLevelIntro(true);
@@ -140,6 +165,10 @@ export default function JuegoPage() {
     state.timeRemaining = def.timeLimit;
     state.lastTimeTick = Date.now();
     state.levelTransitioning = false;
+    
+    // Initialize level stats tracking
+    state.levelStartFlowers = state.totalFlowers;
+    state.levelStartEnemies = state.enemiesKilled;
 
     audio.playMusic(levelIdx);
     syncUI(state);
@@ -195,6 +224,11 @@ export default function JuegoPage() {
     state.enemiesKilled = 0;
     state.currentLevel = 0;
     state.deathMessageShown = false;
+    state.levelStartFlowers = 0;
+    state.levelStartEnemies = 0;
+    
+    // Reset level stats
+    levelStatsRef.current = [];
 
     loadLevel(0, audio, player, map, camera, bg, enemies, state);
 
@@ -369,7 +403,7 @@ export default function JuegoPage() {
         <canvas ref={canvasRef} width={800} height={450} className="block w-full h-auto" style={{ imageRendering: 'pixelated' }} />
 
         {/* ===== HUD ===== */}
-        {gameStarted && !showMenu && !gameWon && (
+        {gameStarted && !showMenu && !gameWon && !showRecap && (
           <div className="absolute top-0 left-0 w-full pointer-events-none z-20">
             {/* Top bar */}
             <div className="flex items-center justify-between px-2 py-1 bg-black/50">
@@ -425,7 +459,7 @@ export default function JuegoPage() {
         )}
 
         {/* Mobile controls */}
-        {gameStarted && !gameWon && !showPauseMenu && !showMenu && !showLevelIntro && (
+        {gameStarted && !gameWon && !showRecap && !showPauseMenu && !showMenu && !showLevelIntro && (
           <div className="lg:hidden absolute inset-0 pointer-events-none" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
             <button className="absolute bottom-3 left-3 w-14 h-14 bg-black/40 rounded-full border-2 border-white/50 flex items-center justify-center text-xl text-white pointer-events-auto active:bg-white/30 transition-all select-none"
               onTouchStart={e => { e.preventDefault(); handleTouch('left', true); }}
@@ -498,7 +532,7 @@ export default function JuegoPage() {
         )}
 
         {/* ===== PAUSE MENU ===== */}
-        {showPauseMenu && !gameWon && (
+        {showPauseMenu && !gameWon && !showRecap && (
           <div className="absolute inset-0 bg-[#0d0a14]/95 flex flex-col items-center justify-center text-center p-4 z-50">
             <h2 className="text-[#d4af37] text-sm md:text-xl mb-4" style={{ textShadow: '3px 3px #000' }}>⏸️ PAUSA</h2>
             <div className="mb-4 text-[8px] md:text-[10px] text-white/60">
@@ -521,6 +555,56 @@ export default function JuegoPage() {
         )}
 
         {/* ===== WIN SCREEN ===== */}
+        {/* Recap Screen */}
+        {showRecap && !gameWon && (
+          <div className="absolute inset-0 bg-[#0d0a14]/97 flex flex-col items-center justify-center p-4 z-50 overflow-y-auto">
+            <h1 className="text-[#d4af37] text-xs md:text-base mb-4" style={{ textShadow: '3px 3px #000', fontFamily: "'Press Start 2P', cursive" }}>
+              📜 RECOPILATORIO DE TU AVENTURA 📜
+            </h1>
+            
+            <div className="w-full max-w-2xl space-y-3 mb-6">
+              {levelStatsRef.current.map((stats, idx) => {
+                const levelInfo = LEVELS[idx];
+                return (
+                  <div key={idx} 
+                    className="bg-[#1a1025]/90 border-2 border-[#d4af37]/40 p-3 rounded-lg text-white"
+                    style={{ animation: `fadeIn ${0.5 + idx * 0.2}s ease` }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] md:text-xs font-bold" style={{ fontFamily: "'Press Start 2P', cursive" }}>
+                        NIVEL {stats.level}: {levelInfo?.name || ''}
+                      </span>
+                    </div>
+                    <div className="text-[8px] md:text-[10px] space-y-1 pl-2">
+                      <p>🌷 Flores recolectadas: {stats.flowers}</p>
+                      <p>💀 Enemigos derrotados: {stats.enemies}</p>
+                      <p>⏱️ Bonus de tiempo: +{stats.timeBonus} pts</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="bg-[#d4af37]/20 border-2 border-[#d4af37] p-4 rounded-lg mb-4">
+              <p className="text-[#d4af37] text-[10px] md:text-xs mb-2" style={{ fontFamily: "'Press Start 2P', cursive" }}>
+                TOTALES
+              </p>
+              <div className="text-white text-[8px] md:text-[10px] space-y-1">
+                <p>🌷 Total Flores: {flowersCollected} / 12</p>
+                <p>💀 Total Enemigos: {enemiesKilled}</p>
+                <p>⭐ Puntuación Final: {score}</p>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => { setShowRecap(false); setGameWon(true); }}
+              className="bg-[#d4af37] text-[#1a1025] px-6 py-2 text-[10px] md:text-xs border-none shadow-[4px_4px_0_#8b7222] hover:shadow-[2px_2px_0_#8b7222] active:translate-x-[2px] active:translate-y-[2px] transition-all"
+              style={{ fontFamily: "'Press Start 2P', cursive" }}>
+              CONTINUAR →
+            </button>
+          </div>
+        )}
+        
+        {/* Victory Screen */}
         {gameWon && (
           <div className="absolute inset-0 bg-[#0d0a14]/97 flex flex-col items-center justify-center text-center p-4 z-50" style={{ animation: 'fadeIn 1s ease' }}>
             <h1 className="text-[#d4af37] text-xs md:text-lg mb-3" style={{ textShadow: '3px 3px #000' }}>
