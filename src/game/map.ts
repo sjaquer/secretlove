@@ -84,11 +84,12 @@ export class GameMap implements IMapAccessor {
       }
     }
 
-    // Check portal
-    if (this.portal.active) {
+    // Check portal – skip if already fading/dying or transitioning
+    if (this.portal.active && !state.isFading && !state.levelTransitioning) {
       const dx = (player.x + player.width / 2) - (this.portal.x + 16);
       const dy = (player.y + player.height / 2) - (this.portal.y + 16);
       if (Math.abs(dx) < 24 && Math.abs(dy) < 24) {
+        this.portal.active = false; // deactivate so it can't fire twice
         audio.playSound('portal');
         this.onWin?.();
       }

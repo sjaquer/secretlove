@@ -18,6 +18,10 @@ export default function JuegoPage() {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
   const [showRecap, setShowRecap] = useState(false);
+  const [showGoodEnding, setShowGoodEnding] = useState(false);
+  const [showBadEnding, setShowBadEnding] = useState(false);
+  const [badEndingPhase, setBadEndingPhase] = useState(0);
+  const [goodEndingPhase, setGoodEndingPhase] = useState(0);
   const [flowersCollected, setFlowersCollected] = useState(0);
   const [message, setMessage] = useState('');
   const [isPaused, setIsPaused] = useState(false);
@@ -114,14 +118,14 @@ export default function JuegoPage() {
         // Save level stats
         const levelFlowers = state.totalFlowers - (state.levelStartFlowers || 0);
         const levelEnemies = state.enemiesKilled - (state.levelStartEnemies || 0);
-        const timeBonus = Math.max(0, state.timeRemaining * 10);
-        state.score += timeBonus;
+        const completionBonus = 500;
+        state.score += completionBonus;
         
         levelStatsRef.current[levelIdx] = {
           level: levelIdx + 1,
           flowers: levelFlowers,
           enemies: levelEnemies,
-          timeBonus,
+          timeBonus: completionBonus,
           completed: true,
         };
 
@@ -140,8 +144,6 @@ export default function JuegoPage() {
             state.levelTransitioning = false;
             state.deathMessageShown = false;
             state.lives = 3;
-            state.timeRemaining = LEVELS[next].timeLimit;
-            state.lastTimeTick = Date.now();
             setShowLevelIntro(false);
             loadLevel(next, audio, player, map, camera, bg, enemies, state);
             syncUI(state);
@@ -152,7 +154,7 @@ export default function JuegoPage() {
 
     bg.setTheme(def.theme);
     player.setGravity(def.gravity);
-    player.reset(data.startX, data.startY);
+    player.reset(data.startX, data.startY, 90); // ~1.5s of invincibility on level start
     camera.reset();
 
     // Enemies
@@ -249,14 +251,25 @@ export default function JuegoPage() {
             state.lives = 3;
             state.score = Math.max(0, state.score - 500);
             const def = LEVELS[state.currentLevel];
-            state.timeRemaining = def.timeLimit;
             const data = def.build();
             state.lastCheckpoint = { x: data.startX, y: data.startY };
           }
-          player.reset(state.lastCheckpoint.x, state.lastCheckpoint.y);
-          if (!state.deathMessageShown) {
-            showMsg("¡Cuidado!", { autoClear: true, duration: 800 });
+          player.reset(state.lastCheckpoint.x, state.lastCheckpoint.y, 60); // ~1s invincibility after death
+          const deathMsgs = [
+            "Las sombras me atraparon... pero sigo aquí.",
+            "Caer duele, pero quedarse en el suelo duele más.",
+            "Esta oscuridad es familiar... demasiado familiar.",
+            "¿Cuántas veces más tendré que recorrer este camino?",
+            "Tropecé de nuevo... como siempre.",
+          ];
+          if (state.lives <= 1 || !state.deathMessageShown) {
+            const msg = state.lives <= 1 
+              ? "No queda casi nada de mí... pero algo me dice que siga."
+              : deathMsgs[Math.floor(Math.random() * deathMsgs.length)];
+            showMsg(msg, { autoClear: true, duration: 1500 });
             state.deathMessageShown = true;
+          } else {
+            showMsg(deathMsgs[Math.floor(Math.random() * deathMsgs.length)], { autoClear: true, duration: 800 });
           }
         }
       } else if (state.fadeOpacity > 0) {
@@ -265,13 +278,13 @@ export default function JuegoPage() {
 
       // === UPDATE ===
       const paused = state.isPausedForFlower || showPauseMenuRef.current || state.levelTransitioning;
-      if (state.fadeOpacity < 1.0 && !paused) {
+      if (state.fadeOpacity < 1.0 && !paused && !state.isFading) {
         player.update(state.inputs, map.width * TILE_SIZE, map, state, audio);
         camera.follow(player, map.width * TILE_SIZE);
         enemies.update(map);
         map.update(player, audio, state);
 
-        // Enemy collision
+        // Enemy collision – only when NOT fading and NOT invincible
         const hit = enemies.checkPlayerCollision(player.x, player.y, player.width, player.height, player.velY);
         if (hit && !player.invincible) {
           if (hit.result === 'stomp') {
@@ -281,22 +294,6 @@ export default function JuegoPage() {
             state.score += 100;
             state.enemiesKilled++;
           } else {
-            if (!state.isFading) {
-              state.isFading = true;
-              audio.playSound('hurt');
-            }
-          }
-        }
-
-        // Timer
-        if (now - state.lastTimeTick >= 1000) {
-          state.timeRemaining -= (now - state.lastTimeTick) / 1000;
-          state.lastTimeTick = now;
-          if (state.timeRemaining <= 10 && state.timeRemaining > 0 && Math.ceil(state.timeRemaining) % 2 === 0) {
-            audio.playSound('timeWarn');
-          }
-          if (state.timeRemaining <= 0) {
-            state.timeRemaining = 0;
             if (!state.isFading) {
               state.isFading = true;
               audio.playSound('hurt');
@@ -390,8 +387,6 @@ export default function JuegoPage() {
   }, []);
 
   const levelDef = LEVELS[currentLevel];
-  const timerPct = levelDef ? (timeRemaining / levelDef.timeLimit) * 100 : 100;
-  const timerColor = timerPct > 30 ? '#44cc44' : timerPct > 15 ? '#ccaa22' : '#ff4444';
 
   // ===== RENDER =====
   return (
@@ -403,18 +398,15 @@ export default function JuegoPage() {
         <canvas ref={canvasRef} width={800} height={450} className="block w-full h-auto" style={{ imageRendering: 'pixelated' }} />
 
         {/* ===== HUD ===== */}
-        {gameStarted && !showMenu && !gameWon && !showRecap && (
+        {gameStarted && !showMenu && !gameWon && !showRecap && !showGoodEnding && !showBadEnding && (
           <div className="absolute top-0 left-0 w-full pointer-events-none z-20">
             {/* Top bar */}
             <div className="flex items-center justify-between px-2 py-1 bg-black/50">
               {/* Level name */}
-              <span className="text-[6px] md:text-[8px] text-white/80 truncate max-w-[120px]" style={{ textShadow: '1px 1px #000' }}>
+              <span className="text-[6px] md:text-[8px] text-white/80 truncate" style={{ textShadow: '1px 1px #000' }}>
                 {levelDef?.name ?? ''}
               </span>
-              {/* Timer bar */}
-              <div className="flex-1 mx-2 h-2 md:h-3 bg-black/60 rounded overflow-hidden border border-white/20">
-                <div className="h-full transition-all duration-1000 rounded" style={{ width: `${timerPct}%`, backgroundColor: timerColor }} />
-              </div>
+              <div className="flex-1" />
               {/* Pause button */}
               <button
                 onClick={togglePause}
@@ -439,8 +431,8 @@ export default function JuegoPage() {
 
         {/* Message overlay */}
         {message && (
-          <div className="absolute top-[22%] left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#1a1025ee] to-[#2a1535ee] border-4 border-[#d4af37] p-4 md:p-5 text-center w-[90%] max-w-[500px] text-white text-[10px] md:text-[12px] leading-relaxed z-30"
-            style={{ animation: 'messageFloat 0.5s ease-out', boxShadow: '0 0 40px rgba(212,175,55,0.5)' }}>
+          <div className="absolute top-[22%] left-1/2 bg-gradient-to-b from-[#1a1025ee] to-[#2a1535ee] border-4 border-[#d4af37] p-4 md:p-5 text-center w-[90%] max-w-[500px] text-white text-[10px] md:text-[12px] leading-relaxed z-30"
+            style={{ transform: 'translateX(-50%)', opacity: 1, boxShadow: '0 0 40px rgba(212,175,55,0.5)' }}>
             <div className="mb-2 text-[#d4af37] text-[14px] md:text-[16px]">✿</div>
             <div className="italic">{message}</div>
             <div className="mt-3 text-[6px] md:text-[8px] text-[#d4af37]/60">Presiona cualquier tecla</div>
@@ -451,15 +443,15 @@ export default function JuegoPage() {
         {showLevelIntro && (
           <div className="absolute inset-0 bg-[#0d0a14] flex flex-col items-center justify-center z-40" style={{ animation: 'fadeInOut 3s ease' }}>
             <div className="text-[#d4af37] text-xs md:text-lg mb-3" style={{ textShadow: '3px 3px #000' }}>
-              Nivel {(gameState.current.currentLevel) + 1}
+              Nivel {(gameState.current.currentLevel) + 2}
             </div>
-            <div className="text-white text-[10px] md:text-sm mb-2">{LEVELS[(gameState.current.currentLevel)]?.name}</div>
-            <div className="text-white/60 text-[7px] md:text-[10px] italic">{LEVELS[(gameState.current.currentLevel)]?.subtitle}</div>
+            <div className="text-white text-[10px] md:text-sm mb-2">{LEVELS[(gameState.current.currentLevel) + 1]?.name}</div>
+            <div className="text-white/60 text-[7px] md:text-[10px] italic">{LEVELS[(gameState.current.currentLevel) + 1]?.subtitle}</div>
           </div>
         )}
 
         {/* Mobile controls */}
-        {gameStarted && !gameWon && !showRecap && !showPauseMenu && !showMenu && !showLevelIntro && (
+        {gameStarted && !gameWon && !showRecap && !showGoodEnding && !showBadEnding && !showPauseMenu && !showMenu && !showLevelIntro && (
           <div className="lg:hidden absolute inset-0 pointer-events-none" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
             <button className="absolute bottom-3 left-3 w-14 h-14 bg-black/40 rounded-full border-2 border-white/50 flex items-center justify-center text-xl text-white pointer-events-auto active:bg-white/30 transition-all select-none"
               onTouchStart={e => { e.preventDefault(); handleTouch('left', true); }}
@@ -493,10 +485,11 @@ export default function JuegoPage() {
               <div className="bg-[#1a1025]/90 border-2 border-[#d4af37]/40 p-3 md:p-4 mb-3 rounded-lg">
                 <h2 className="text-[#ff69b4] text-[9px] md:text-xs mb-2">✿ LA HISTORIA ✿</h2>
                 <p className="text-[#ccc] text-[7px] md:text-[9px] leading-relaxed">
-                  Una valiente aventurera emprende un viaje épico a través de cinco reinos fantásticos:
-                  las mazmorras ardientes de un castillo antiguo, las torres azotadas por el viento,
-                  una ciénaga mística, un desierto olvidado, y finalmente las estrellas en un jardín lunar.
-                  En cada rincón se esconden tulipanes que guardan mensajes de amor eterno.
+                  Una princesa despierta en un mundo que no entiende. Pasillos interminables,
+                  reglas que no recuerda haber aceptado, y una soledad que crece con cada paso.
+                  Dicen que hay flores escondidas en cada rincón... flores que guardan sus pensamientos
+                  más profundos. ¿Podrá encontrarlos todos y despertar de este sueño?
+                  ¿O está condenada a repetir el mismo camino, eternamente?
                 </p>
               </div>
 
@@ -508,7 +501,7 @@ export default function JuegoPage() {
                   <p>🌷 Encuentra los 12 tulipanes en los 5 niveles</p>
                   <p>🔥 Evita la lava, el agua, la arena movediza y el vacío</p>
                   <p>🌙 ¡En la luna la gravedad es más baja!</p>
-                  <p>⏱️ Cada nivel tiene tiempo límite</p>
+                  <p>🧘 Tómate tu tiempo, no hay prisa</p>
                   <p>🏰 Llega al portal para avanzar al siguiente nivel</p>
                 </div>
               </div>
@@ -532,7 +525,7 @@ export default function JuegoPage() {
         )}
 
         {/* ===== PAUSE MENU ===== */}
-        {showPauseMenu && !gameWon && !showRecap && (
+        {showPauseMenu && !gameWon && !showRecap && !showGoodEnding && !showBadEnding && (
           <div className="absolute inset-0 bg-[#0d0a14]/95 flex flex-col items-center justify-center text-center p-4 z-50">
             <h2 className="text-[#d4af37] text-sm md:text-xl mb-4" style={{ textShadow: '3px 3px #000' }}>⏸️ PAUSA</h2>
             <div className="mb-4 text-[8px] md:text-[10px] text-white/60">
@@ -556,10 +549,10 @@ export default function JuegoPage() {
 
         {/* ===== WIN SCREEN ===== */}
         {/* Recap Screen */}
-        {showRecap && !gameWon && (
+        {showRecap && !gameWon && !showGoodEnding && !showBadEnding && (
           <div className="absolute inset-0 bg-[#0d0a14]/97 flex flex-col items-center justify-center p-4 z-50 overflow-y-auto">
             <h1 className="text-[#d4af37] text-xs md:text-base mb-4" style={{ textShadow: '3px 3px #000', fontFamily: "'Press Start 2P', cursive" }}>
-              📜 RECOPILATORIO DE TU AVENTURA 📜
+              📜 TU VIAJE 📜
             </h1>
             
             <div className="w-full max-w-2xl space-y-3 mb-6">
@@ -568,16 +561,16 @@ export default function JuegoPage() {
                 return (
                   <div key={idx} 
                     className="bg-[#1a1025]/90 border-2 border-[#d4af37]/40 p-3 rounded-lg text-white"
-                    style={{ animation: `fadeIn ${0.5 + idx * 0.2}s ease` }}>
+                    style={{ animation: `fadeIn ${0.5 + idx * 0.3}s ease` }}>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-[10px] md:text-xs font-bold" style={{ fontFamily: "'Press Start 2P', cursive" }}>
-                        NIVEL {stats.level}: {levelInfo?.name || ''}
+                        {levelInfo?.name || `Nivel ${stats.level}`}
                       </span>
                     </div>
-                    <div className="text-[8px] md:text-[10px] space-y-1 pl-2">
-                      <p>🌷 Flores recolectadas: {stats.flowers}</p>
-                      <p>💀 Enemigos derrotados: {stats.enemies}</p>
-                      <p>⏱️ Bonus de tiempo: +{stats.timeBonus} pts</p>
+                    <div className="text-[8px] md:text-[10px] space-y-1 pl-2 text-white/80">
+                      <p>🌷 Pensamientos encontrados: {stats.flowers}</p>
+                      <p>💀 Sombras derrotadas: {stats.enemies}</p>
+                      <p>✨ Bonus de nivel: +{stats.timeBonus}</p>
                     </div>
                   </div>
                 );
@@ -585,26 +578,232 @@ export default function JuegoPage() {
             </div>
             
             <div className="bg-[#d4af37]/20 border-2 border-[#d4af37] p-4 rounded-lg mb-4">
-              <p className="text-[#d4af37] text-[10px] md:text-xs mb-2" style={{ fontFamily: "'Press Start 2P', cursive" }}>
-                TOTALES
-              </p>
-              <div className="text-white text-[8px] md:text-[10px] space-y-1">
-                <p>🌷 Total Flores: {flowersCollected} / 12</p>
-                <p>💀 Total Enemigos: {enemiesKilled}</p>
-                <p>⭐ Puntuación Final: {score}</p>
+              <div className="text-white text-[8px] md:text-[10px] space-y-1 text-center">
+                <p>🌷 Pensamientos: {flowersCollected} / 12</p>
+                <p>⭐ Puntuación: {score}</p>
               </div>
             </div>
             
             <button 
-              onClick={() => { setShowRecap(false); setGameWon(true); }}
+              onClick={() => {
+                setShowRecap(false);
+                if (flowersCollected >= 12) {
+                  setShowGoodEnding(true);
+                  setGoodEndingPhase(0);
+                } else {
+                  setShowBadEnding(true);
+                  setBadEndingPhase(0);
+                }
+              }}
               className="bg-[#d4af37] text-[#1a1025] px-6 py-2 text-[10px] md:text-xs border-none shadow-[4px_4px_0_#8b7222] hover:shadow-[2px_2px_0_#8b7222] active:translate-x-[2px] active:translate-y-[2px] transition-all"
               style={{ fontFamily: "'Press Start 2P', cursive" }}>
               CONTINUAR →
             </button>
           </div>
         )}
+
+        {/* ===== GOOD ENDING (all flowers) ===== */}
+        {showGoodEnding && (() => {
+          const phases = [
+            { text: "...", sub: "", bg: "#0d0a14" },
+            { text: "Por un momento, todo se detiene.", sub: "El silencio ya no se siente vacío.", bg: "#0d0a14" },
+            { text: "Recuerdo cada pensamiento que encontré.", sub: "Cada flor era una parte de mí que había olvidado.", bg: "#0f0e1a" },
+            { text: "Creí que estaba atrapada en un juego con reglas.", sub: "Pero las reglas... siempre fueron mías.", bg: "#12101f" },
+            { text: "No necesito que alguien me rescate.", sub: "Nunca lo necesité.", bg: "#1a1530" },
+            { text: "La princesa abre los ojos.", sub: "El sueño termina.", bg: "#1e1a38" },
+            { text: "Lo que sentía no era un defecto.", sub: "Era una señal de que necesitaba mirar hacia adentro.", bg: "#241e42" },
+            { text: "Y ahora...", sub: "El mundo es mucho más grande de lo que imaginé.", bg: "#2a2250" },
+          ];
+          const phase = phases[goodEndingPhase] || phases[phases.length - 1];
+          const isLast = goodEndingPhase >= phases.length - 1;
+          
+          return (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-50 transition-colors duration-[2000ms]"
+              style={{ backgroundColor: phase.bg }}>
+              
+              {/* Princess waking animation - shown in later phases */}
+              {goodEndingPhase >= 5 && (
+                <div className="mb-6" style={{ animation: 'fadeIn 2s ease' }}>
+                  <div className="relative w-20 h-24 mx-auto">
+                    {/* Bed */}
+                    <div className="absolute bottom-0 w-full h-8 bg-[#4a3060] rounded-lg border-2 border-[#6a4080]" />
+                    {/* Blanket */}
+                    <div className="absolute bottom-2 left-2 right-2 h-6 bg-[#9b59d0]/60 rounded" style={{ 
+                      animation: goodEndingPhase >= 6 ? 'blanketSlide 1.5s ease forwards' : 'none' 
+                    }} />
+                    {/* Princess body sitting up */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2" style={{
+                      animation: goodEndingPhase >= 6 ? 'sitUp 1.5s ease forwards' : 'none',
+                      transformOrigin: 'bottom center'
+                    }}>
+                      {/* Head */}
+                      <div className="w-8 h-8 bg-[#ffe0c0] rounded-full mx-auto border border-[#d4a070]" />
+                      {/* Hair */}
+                      <div className="absolute top-0 left-0 w-8 h-5 bg-[#4a2800] rounded-t-full" />
+                      {/* Eyes */}
+                      <div className="absolute top-3 left-2 flex gap-2">
+                        <div className="w-1.5 h-1.5 bg-[#2a1500] rounded-full" style={{
+                          animation: goodEndingPhase >= 6 ? 'blink 0.5s ease 0.8s' : 'none'
+                        }} />
+                        <div className="w-1.5 h-1.5 bg-[#2a1500] rounded-full" style={{
+                          animation: goodEndingPhase >= 6 ? 'blink 0.5s ease 0.8s' : 'none'
+                        }} />
+                      </div>
+                      {/* Smile */}
+                      {goodEndingPhase >= 7 && (
+                        <div className="absolute top-5 left-1/2 -translate-x-1/2 w-3 h-1.5 border-b-2 border-[#c06060] rounded-b-full" />
+                      )}
+                      {/* Body */}
+                      <div className="w-6 h-6 bg-[#9b59d0] mx-auto rounded-b-lg mt-[-1px]" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Stars appearing in later phases */}
+              {goodEndingPhase >= 7 && (
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <div key={i} className="absolute w-1 h-1 bg-[#d4af37] rounded-full"
+                      style={{
+                        left: `${10 + (i * 37) % 80}%`,
+                        top: `${5 + (i * 23) % 70}%`,
+                        animation: `twinkle ${1 + (i % 3) * 0.5}s ease-in-out ${i * 0.15}s infinite`,
+                        opacity: 0,
+                      }} />
+                  ))}
+                </div>
+              )}
+
+              <p className="text-white text-[11px] md:text-sm mb-3 leading-relaxed max-w-md transition-opacity duration-1000"
+                style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)', animation: 'fadeIn 1.5s ease' }}
+                key={goodEndingPhase}>
+                {phase.text}
+              </p>
+              {phase.sub && (
+                <p className="text-white/60 text-[8px] md:text-[11px] mb-6 italic max-w-sm"
+                  style={{ animation: 'fadeIn 2s ease' }}
+                  key={`sub-${goodEndingPhase}`}>
+                  {phase.sub}
+                </p>
+              )}
+
+              {!isLast ? (
+                <button onClick={() => setGoodEndingPhase(p => p + 1)}
+                  className="text-[#d4af37]/70 text-[8px] md:text-[10px] hover:text-[#d4af37] transition-colors mt-4"
+                  style={{ fontFamily: "'Press Start 2P', cursive", animation: 'pulse 2s ease-in-out infinite' }}>
+                  ▼
+                </button>
+              ) : (
+                <div className="mt-6 space-y-4" style={{ animation: 'fadeIn 2s ease 1s both' }}>
+                  <p className="text-[#d4af37] text-[10px] md:text-xs" style={{ fontFamily: "'Press Start 2P', cursive" }}>
+                    FIN
+                  </p>
+                  <p className="text-[#ff69b4] text-[8px] md:text-[10px] italic">
+                    La princesa despertó. Y esta vez, eligió su propio camino.
+                  </p>
+                  <button onClick={() => window.location.reload()}
+                    className="bg-[#d4af37] text-[#1a1025] px-5 py-2 text-[9px] md:text-[11px] border-none shadow-[4px_4px_0_#8b7222] active:translate-x-[2px] active:translate-y-[2px] transition-all"
+                    style={{ fontFamily: "'Press Start 2P', cursive" }}>
+                    DESPERTAR DE NUEVO
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ===== BAD ENDING (not all flowers) ===== */}
+        {showBadEnding && (() => {
+          const phases = [
+            { text: "...", sub: "" },
+            { text: "Llegaste al final.", sub: "Pero hay algo que falta." },
+            { text: "Los pensamientos que no recogiste siguen ahí.", sub: "Flotando en la oscuridad. Esperándote." },
+            { text: "Creíste que podías avanzar sin mirar hacia adentro.", sub: `Solo encontraste ${flowersCollected} de 12 fragmentos.` },
+            { text: "Y ahora...", sub: "El suelo desaparece." },
+            { text: "FALLING", sub: "" },
+          ];
+          const phase = phases[badEndingPhase] || phases[phases.length - 1];
+          const isFalling = badEndingPhase >= 5;
+          
+          return (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-50 overflow-hidden"
+              style={{ backgroundColor: '#0d0a14' }}>
+              
+              {isFalling ? (
+                /* Infinite falling animation */
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  {/* Falling princess pixel art */}
+                  <div className="relative" style={{ animation: 'floatDown 3s ease-in-out infinite' }}>
+                    <div className="w-6 h-8 relative mx-auto">
+                      {/* Head */}
+                      <div className="w-5 h-5 bg-[#ffe0c0] rounded-full mx-auto border border-[#d4a070]" />
+                      {/* Hair flying up */}
+                      <div className="absolute -top-2 left-0 w-5 h-4 bg-[#4a2800] rounded-t-full" style={{ animation: 'hairFloat 1.5s ease-in-out infinite' }} />
+                      {/* Eyes (closed, sad) */}
+                      <div className="absolute top-2 left-1 flex gap-1.5">
+                        <div className="w-1 h-0.5 bg-[#2a1500]" />
+                        <div className="w-1 h-0.5 bg-[#2a1500]" />
+                      </div>
+                      {/* Body */}
+                      <div className="w-5 h-4 bg-[#9b59d0] mx-auto rounded-b-lg" />
+                    </div>
+                  </div>
+                  
+                  {/* Moving background lines to simulate falling */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {Array.from({ length: 30 }).map((_, i) => (
+                      <div key={i} className="absolute w-[1px] bg-white/10"
+                        style={{
+                          left: `${5 + (i * 31) % 90}%`,
+                          height: `${20 + (i % 4) * 15}px`,
+                          animation: `fallLine ${1 + (i % 3) * 0.5}s linear ${i * 0.1}s infinite`,
+                        }} />
+                    ))}
+                  </div>
+                  
+                  <p className="text-white/40 text-[8px] md:text-[10px] mt-12 italic"
+                    style={{ animation: 'pulse 3s ease-in-out infinite' }}>
+                    Si repetimos los mismos patrones...
+                  </p>
+                  <p className="text-white/30 text-[7px] md:text-[9px] mt-2 italic"
+                    style={{ animation: 'pulse 3s ease-in-out 1.5s infinite' }}>
+                    siempre caeremos en el mismo vacío.
+                  </p>
+                  
+                  <button onClick={() => window.location.reload()}
+                    className="mt-8 text-[#d4af37]/50 text-[8px] md:text-[10px] hover:text-[#d4af37] transition-colors border border-[#d4af37]/30 px-4 py-2 hover:border-[#d4af37]/60"
+                    style={{ fontFamily: "'Press Start 2P', cursive", animation: 'fadeIn 5s ease 3s both' }}>
+                    INTENTAR DE NUEVO
+                  </button>
+                </div>
+              ) : (
+                /* Text phases before falling */
+                <>
+                  <p className="text-white text-[11px] md:text-sm mb-3 leading-relaxed max-w-md"
+                    style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)', animation: 'fadeIn 1.5s ease' }}
+                    key={badEndingPhase}>
+                    {phase.text}
+                  </p>
+                  {phase.sub && (
+                    <p className="text-white/50 text-[8px] md:text-[11px] mb-6 italic max-w-sm"
+                      style={{ animation: 'fadeIn 2s ease' }}
+                      key={`sub-${badEndingPhase}`}>
+                      {phase.sub}
+                    </p>
+                  )}
+                  <button onClick={() => setBadEndingPhase(p => p + 1)}
+                    className="text-[#666]/70 text-[8px] md:text-[10px] hover:text-white/40 transition-colors mt-4"
+                    style={{ fontFamily: "'Press Start 2P', cursive", animation: 'pulse 2s ease-in-out infinite' }}>
+                    ▼
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })()}
         
-        {/* Victory Screen */}
+        {/* Victory Screen (legacy, kept as fallback) */}
         {gameWon && (
           <div className="absolute inset-0 bg-[#0d0a14]/97 flex flex-col items-center justify-center text-center p-4 z-50" style={{ animation: 'fadeIn 1s ease' }}>
             <h1 className="text-[#d4af37] text-xs md:text-lg mb-3" style={{ textShadow: '3px 3px #000' }}>
@@ -635,9 +834,16 @@ export default function JuegoPage() {
       </Button>
 
       <style jsx global>{`
-        @keyframes messageFloat { 0% { opacity:0; transform:translate(-50%,-55%) scale(0.98); } 60% { opacity:1; transform:translate(-50%,-50%) scale(1.02); } 100% { opacity:1; transform:translate(-50%,-50%) scale(1); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @keyframes fadeInOut { 0% { opacity:0; } 20% { opacity:1; } 80% { opacity:1; } 100% { opacity:0; } }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        @keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(0.5); } 50% { opacity: 1; transform: scale(1.2); } }
+        @keyframes floatDown { 0%, 100% { transform: translateY(-8px); } 50% { transform: translateY(8px); } }
+        @keyframes hairFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        @keyframes fallLine { 0% { transform: translateY(-100vh); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(100vh); opacity: 0; } }
+        @keyframes blanketSlide { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(12px); opacity: 0.3; } }
+        @keyframes sitUp { 0% { transform: translateY(0) rotate(0deg); } 100% { transform: translateY(-12px) rotate(0deg); } }
+        @keyframes blink { 0%, 40% { opacity: 0; } 50%, 100% { opacity: 1; } }
       `}</style>
     </div>
   );

@@ -22,7 +22,8 @@ export class Player {
   friction = 0.82;
   gravity = BASE_GRAVITY;
   private normalGravity = BASE_GRAVITY;
-  private floatGravity = BASE_GRAVITY * 0.4; // Gravedad reducida al mantener salto
+  private floatGravity = BASE_GRAVITY * 0.4;
+  private isLowGravity = false; // for horizontal boost on moon etc
 
   grounded = false;
   facingRight = true;
@@ -45,7 +46,7 @@ export class Player {
   invincible = false;
   private invTimer = 0;
 
-  reset(sx: number, sy: number) {
+  reset(sx: number, sy: number, invFrames = 0) {
     this.x = sx;
     this.y = sy;
     this.velX = 0;
@@ -54,17 +55,24 @@ export class Player {
     this.alive = true;
     this.animState = 'idle';
     this.animFrame = 0;
-    this.invincible = false;
-    this.invTimer = 0;
     this.coyoteCounter = 0;
     this.jumpBufferCounter = 0;
     this.isJumping = false;
+    // Grant invincibility frames (0 = none)
+    if (invFrames > 0) {
+      this.invincible = true;
+      this.invTimer = invFrames;
+    } else {
+      this.invincible = false;
+      this.invTimer = 0;
+    }
   }
 
   setGravity(g: number) {
     this.normalGravity = g;
     this.floatGravity = g * 0.4;
     this.gravity = g;
+    this.isLowGravity = g < 0.4;
   }
 
   update(inputs: Inputs, mapWidth: number, map: IMapAccessor, state: GameState, audio: AudioSystem) {
@@ -77,17 +85,25 @@ export class Player {
     }
 
     // --- Horizontal movement ---
+    // Low gravity gives horizontal boost (more air control & speed)
+    const hSpeedMult = this.isLowGravity ? 1.35 : 1.0;
+    const hAccelMult = this.isLowGravity ? 1.25 : 1.0;
+    const effectiveSpeed = this.speed * hSpeedMult;
+    const effectiveAccel = this.acceleration * hAccelMult;
+    // In low gravity, less friction in air for longer air momentum
+    const effectiveFriction = (this.isLowGravity && !this.grounded) ? 0.92 : this.friction;
+
     if (inputs.left) {
-      this.velX -= this.acceleration;
+      this.velX -= effectiveAccel;
       this.facingRight = false;
     } else if (inputs.right) {
-      this.velX += this.acceleration;
+      this.velX += effectiveAccel;
       this.facingRight = true;
     } else {
-      this.velX *= this.friction;
+      this.velX *= effectiveFriction;
       if (Math.abs(this.velX) < 0.2) this.velX = 0;
     }
-    this.velX = Math.max(-this.speed, Math.min(this.speed, this.velX));
+    this.velX = Math.max(-effectiveSpeed, Math.min(effectiveSpeed, this.velX));
 
     // Apply horizontal movement + collisions
     this.x += this.velX;
@@ -109,7 +125,7 @@ export class Player {
 
     // --- Jump ---
     if (this.jumpBufferCounter > 0 && this.coyoteCounter > 0 && !this.isJumping) {
-      const jumpForce = this.gravity < 0.4 ? -8 : -11; // lower jump on moon
+      const jumpForce = this.gravity < 0.4 ? -9 : -12.5; // Stronger jump (-11 -> -12.5) to ensure gaps are crossable
       this.velY = jumpForce;
       this.isJumping = true;
       this.jumpHeld = true;

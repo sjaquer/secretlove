@@ -76,18 +76,26 @@ export const THEME_COLORS: Record<string, Record<string, string>> = {
 
 // Flower messages (12 total, distributed across 5 levels)
 export const FLOWER_MESSAGES: string[] = [
-  "Eres la estrella que ilumina mi camino cada día ✨",
-  "Tu sonrisa es mi melodía favorita, la que nunca me canso de escuchar 🎵",
-  "En cada latido de mi corazón, tu nombre resuena 💓",
-  "Eres la razón por la que creo en la magia y los cuentos de hadas 🏰",
-  "Tu amor es mi refugio en las tormentas más fuertes 🌹",
-  "Cada momento a tu lado es un tesoro que guardo en mi alma 💎",
-  "Tu luz brilla más fuerte que todas las estrellas juntas 🌟",
-  "Eres la flor más hermosa en el jardín de mi vida 🌷",
-  "Me haces sentir que todo es posible cuando estás cerca 💫",
-  "Eres la melodía que mi corazón siempre quiso cantar 🎶",
-  "Tu amor convierte cada día gris en un arcoíris de colores 🌈",
-  "Contigo, hasta el final del universo sería un hermoso viaje 🚀",
+  // Nivel 1 – Castillo (la princesa empieza a darse cuenta)
+  "¿Sabes qué es lo peor de estar aquí? Ni siquiera sé por qué me siento tan vacía... como si este castillo fuera todo lo que existe.",
+  "A veces me pregunto si alguien nota que estoy atrapada. Estas paredes parecen crecer cada día, y yo... me hago más pequeña.",
+  "He caminado por estos pasillos tantas veces que ya conozco cada grieta. Es curioso cómo la rutina puede sentirse como una prisión.",
+
+  // Nivel 2 – Torres (la soledad se hace más clara)
+  "Desde aquí arriba puedo ver el horizonte, pero nunca puedo tocarlo. ¿Alguna vez has sentido que el mundo existe... pero sin ti?",
+  "El viento aquí arriba susurra cosas que no quiero escuchar. Me dice que estoy sola, y lo peor es que ya ni me sorprende.",
+
+  // Nivel 3 – Ciénaga (la metáfora del juego)
+  "¿Sabes qué pienso? Que mi vida es como este juego. Tiene reglas, tiene límites, y alguien más decidió el camino por mí.",
+  "A veces siento que no soy más que un personaje siguiendo un guión. Saltar, correr, evitar peligros... ¿pero hacia dónde?",
+
+  // Nivel 4 – Desierto (el punto más bajo)
+  "Todo se siente igual. Los días son arenas que se escapan entre mis dedos. Si te digo que estoy bien... ¿me creerías?",
+  "He repetido estos patrones tantas veces que ya no sé si los elijo o si ellos me eligen a mí.",
+
+  // Nivel 5 – Luna (la esperanza empieza)
+  "Pero... hay algo diferente hoy. Algo pequeño y frágil. ¿Será que puedo sentirlo? ¿Será que aún estoy aquí de verdad?",
+  "Quizás... quizás la salida no es escapar de este lugar. Quizás es dejar de repetir el mismo camino esperando un destino diferente.",
 ];
 
 // Level music definitions (note frequencies, 0 = rest)
