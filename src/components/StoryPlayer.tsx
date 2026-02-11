@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { generateInteractiveStory, type InteractiveStoryOutput } from '@/ai/flows/generate-interactive-story';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -57,8 +57,10 @@ export function StoryPlayer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previousNarrative, setPreviousNarrative] = useState('');
-    const [hasEnded, setHasEnded] = useState(false);
+  const [hasEnded, setHasEnded] = useState(false);
+  const [lastRequestTime, setLastRequestTime] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const pendingRequestRef = useRef<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -67,14 +69,31 @@ export function StoryPlayer() {
     },
   });
 
-  const fetchStory = async (userAction: string, isRestart = false) => {
+  const fetchStory = useCallback(async (userAction: string, isRestart = false) => {
+    const now = Date.now();
+    const MIN_REQUEST_INTERVAL = 2000; // 2 segundos entre requests
+    
+    // Prevenir llamadas demasiado rápidas
+    if (!isRestart && now - lastRequestTime < MIN_REQUEST_INTERVAL) {
+      setError(`Espera ${Math.ceil((MIN_REQUEST_INTERVAL - (now - lastRequestTime)) / 1000)} segundos antes de continuar.`);
+      return;
+    }
+
+    // Prevenir requests duplicados
+    if (pendingRequestRef.current === userAction && !isRestart) {
+      return;
+    }
+
     setLoading(true);
     setError(null);
+    setLastRequestTime(now);
+    pendingRequestRef.current = userAction;
+    
     try {
-            const history = isRestart ? '' : previousNarrative;
+      const history = isRestart ? '' : previousNarrative;
       const result = await generateInteractiveStory({
-                userAction: userAction,
-                previousNarrative: history,
+        userAction: userAction,
+        previousNarrative: history,
       });
       setStory(result);
             const combinedNarrative = history
@@ -90,13 +109,13 @@ export function StoryPlayer() {
       setError('La magia falló momentáneamente. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
+      pendingRequestRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStory('Comenzar la historia');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchStory]);
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
     fetchStory(data.userAction);
@@ -105,7 +124,9 @@ export function StoryPlayer() {
   const restartStory = () => {
     setPreviousNarrative('');
     setStory(null);
-        setHasEnded(false);
+    setHasEnded(false);
+    setLastRequestTime(0);
+    pendingRequestRef.current = null;
     fetchStory('Comenzar una nueva historia mágica', true);
   }
 

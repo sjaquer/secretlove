@@ -104,24 +104,41 @@ export function AquariumBackground() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    const x = (event.clientX / window.innerWidth) * 2 - 1;
-    const y = (event.clientY / window.innerHeight) * 2 - 1;
-    targetRef.current = { x, y };
-  }, []);
-
   useEffect(() => {
+    // Mover handleMouseMove dentro del useEffect para evitar dependencias inconsistentes
+    const handleMouseMove = (event: MouseEvent) => {
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = (event.clientY / window.innerHeight) * 2 - 1;
+      targetRef.current = { x, y };
+    };
+
     window.addEventListener('mousemove', handleMouseMove);
 
     // Suavizado con requestAnimationFrame para evitar saltos al mover rápido el mouse
     const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+    let lastUpdateTime = 0;
+    const UPDATE_THRESHOLD = 16; // ~60fps, actualizar cada 16ms máximo
+    const POSITION_THRESHOLD = 0.01; // Solo actualizar si la diferencia es significativa
 
-    const tick = () => {
-      setMousePos((prev) => {
-        const nx = lerp(prev.x, targetRef.current.x, 0.08);
-        const ny = lerp(prev.y, targetRef.current.y, 0.08);
-        return { x: nx, y: ny };
-      });
+    const tick = (currentTime: number) => {
+      // Throttle updates para evitar demasiadas actualizaciones
+      if (currentTime - lastUpdateTime < UPDATE_THRESHOLD) {
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      const newX = lerp(mousePos.x, targetRef.current.x, 0.08);
+      const newY = lerp(mousePos.y, targetRef.current.y, 0.08);
+
+      // Solo actualizar estado si hay un cambio significativo
+      const diffX = Math.abs(newX - mousePos.x);
+      const diffY = Math.abs(newY - mousePos.y);
+
+      if (diffX > POSITION_THRESHOLD || diffY > POSITION_THRESHOLD) {
+        setMousePos({ x: newX, y: newY });
+        lastUpdateTime = currentTime;
+      }
+      
       rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -131,7 +148,7 @@ export function AquariumBackground() {
       window.removeEventListener('mousemove', handleMouseMove);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [handleMouseMove]);
+  }, [mousePos]); // Incluir mousePos como dependencia ya que se usa en tick
 
   const getParallax = (layer: number) => {
     if (isMobile) return {};

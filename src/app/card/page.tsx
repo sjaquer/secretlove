@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { Home, Heart, Music, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,14 +66,14 @@ export default function CardPage() {
   const [showFullText, setShowFullText] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
 
-  // The Poem
-  const lines = [
+  // The Poem - stabilized with useMemo
+  const lines = useMemo(() => [
     "No es que muera de amor, muero de ti.",
     "Muero de ti, amor, de amor de ti,",
     "de urgencia mía de mi piel, de mi alma,",
     "de ti y de mi boca",
     "y de lo insoportable que soy yo sin ti."
-  ];
+  ], []);
 
   // Typing effect
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function CardPage() {
     } else {
       setShowFullText(true);
     }
-  }, [isOpen, textIndex, currentLine, showFullText, audioEnabled, lines]);
+  }, [isOpen, textIndex, currentLine, showFullText, audioEnabled]);
 
   const handleOpen = () => {
     setIsOpen(true);
