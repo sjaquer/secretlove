@@ -2,9 +2,8 @@
 export const secretCodes: Record<string, string> = {
   'OTOÑO': '/story',
   'AMOR': '/puzzle',
-  'HORTENSIA': '/card',
+  'TODO MAL SIN TI': '/card',
   'CANCION': '/canciones',
-  'TAMMV': '/video', 
-  'CARTA': '/#', // Placeholder
+  'TAMMV': '/video',
   'NUNTIUS AD DILECTUM MEUM': '/juego',
 };

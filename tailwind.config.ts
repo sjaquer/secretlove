@@ -91,10 +91,23 @@ export default {
             height: '0',
           },
         },
+        fadeInDown: {
+          '0%': { opacity: '0', transform: 'translateY(-20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'spin-slow': 'spin 3s linear infinite',
+        'bounce-slow': 'bounce 3s infinite',
+        'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+        fadeInDown: 'fadeInDown 0.8s ease-out forwards',
+        fadeInUp: 'fadeInUp 0.8s ease-out forwards',
       },
     },
   },

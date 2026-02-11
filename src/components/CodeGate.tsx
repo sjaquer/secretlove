@@ -31,10 +31,9 @@ const GAME_CODE = 'NUNTIUS AD DILECTUM MEUM';
 const codeMetadata: Record<string, { description: string; icon: any }> = {
   'OTOÑO': { description: 'Historia interactiva generada con IA', icon: BookOpen },
   'AMOR': { description: 'Rompecabezas de una imagen especial', icon: Puzzle },
-  'HORTENSIA': { description: 'Tarjeta de amor personalizada', icon: BookHeart },
+  'TODO MAL SIN TI': { description: 'Carta de amor con poema', icon: BookHeart },
   'CANCION': { description: 'Playlist de canciones especiales', icon: Music },
   'TAMMV': { description: 'Video especial', icon: Video },
-  'CARTA': { description: 'Carta de amor', icon: Mail },
   'NUNTIUS AD DILECTUM MEUM': { description: 'La Búsqueda de los Tulipanes - Juego', icon: Gamepad2 },
 };
 
@@ -168,28 +167,31 @@ export function CodeGate() {
                         Los secretos que hemos descubierto juntos 💕
                     </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-3 py-4 max-h-[400px] overflow-y-auto pr-2">
+                <div className="grid gap-4 py-4 max-h-[400px] overflow-y-auto pr-2">
                     {visibleUnlockedCodes.length > 0 ? (
                         visibleUnlockedCodes.map((code) => {
                           const Icon = codeMetadata[code]?.icon || BookHeart;
+                          const destination = secretCodes[code];
                           return (
-                            <Link 
-                              href={secretCodes[code]} 
-                              key={code} 
-                              onClick={() => setDialogOpen(false)}
-                              className="group relative overflow-hidden rounded-xl border-2 border-pink-200 bg-white/80 hover:bg-gradient-to-br hover:from-pink-50 hover:to-rose-50 hover:border-pink-300 hover:shadow-lg transition-all duration-300 p-4"
+                            <button
+                              key={code}
+                              onClick={() => {
+                                setDialogOpen(false);
+                                router.push(destination);
+                              }}
+                              className="group relative overflow-hidden rounded-xl border-2 border-pink-200 bg-white/95 hover:bg-gradient-to-br hover:from-pink-50 hover:to-rose-50 hover:border-pink-300 hover:shadow-lg transition-all duration-300 p-4 hover:scale-[1.02] cursor-pointer w-full text-left"
                             >
-                              <div className="flex items-center gap-4">
-                                <div className="bg-gradient-to-br from-pink-100 to-red-100 p-3 rounded-lg group-hover:scale-110 transition-transform duration-300">
+                              <div className="flex items-center gap-4 h-full">
+                                <div className="bg-gradient-to-br from-pink-100 to-red-100 p-3 rounded-xl group-hover:scale-110 transition-transform duration-300 shadow-sm flex-shrink-0 flex items-center justify-center w-12 h-12">
                                   <Icon className="h-6 w-6 text-pink-600" />
                                 </div>
-                                <div className="flex-1">
-                                  <div className="font-mono text-sm font-bold text-pink-600 mb-1">{code}</div>
-                                  <div className="text-sm text-gray-600">{codeMetadata[code]?.description}</div>
+                                <div className="flex-1 flex flex-col justify-center min-w-0 py-1">
+                                  <div className="font-mono text-base font-bold text-pink-700 mb-0.5 truncate tracking-tight">{code}</div>
+                                  <div className="text-sm text-gray-600 leading-snug line-clamp-2">{codeMetadata[code]?.description}</div>
                                 </div>
-                                <ArrowRight className="h-5 w-5 text-pink-400 group-hover:translate-x-1 transition-transform duration-300" />
+                                <ArrowRight className="h-5 w-5 text-pink-400 group-hover:translate-x-1 transition-transform duration-300 flex-shrink-0 ml-2" />
                               </div>
-                            </Link>
+                            </button>
                           );
                         })
                     ) : (
