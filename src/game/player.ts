@@ -17,9 +17,9 @@ export class Player {
   velY = 0;
 
   // Physics tuning
-  speed = 5.5;
-  acceleration = 0.7;
-  friction = 0.82;
+  speed = 5.2;
+  acceleration = 0.48;
+  friction = 0.88;
   gravity = BASE_GRAVITY;
   private normalGravity = BASE_GRAVITY;
   private floatGravity = BASE_GRAVITY * 0.4;
@@ -91,7 +91,7 @@ export class Player {
     const effectiveSpeed = this.speed * hSpeedMult;
     const effectiveAccel = this.acceleration * hAccelMult;
     // In low gravity, less friction in air for longer air momentum
-    const effectiveFriction = (this.isLowGravity && !this.grounded) ? 0.92 : this.friction;
+    const effectiveFriction = (this.isLowGravity && !this.grounded) ? 0.93 : this.friction;
 
     if (inputs.left) {
       this.velX -= effectiveAccel;
@@ -101,7 +101,7 @@ export class Player {
       this.facingRight = true;
     } else {
       this.velX *= effectiveFriction;
-      if (Math.abs(this.velX) < 0.2) this.velX = 0;
+      if (Math.abs(this.velX) < 0.15) this.velX = 0;
     }
     this.velX = Math.max(-effectiveSpeed, Math.min(effectiveSpeed, this.velX));
 
@@ -125,7 +125,7 @@ export class Player {
 
     // --- Jump ---
     if (this.jumpBufferCounter > 0 && this.coyoteCounter > 0 && !this.isJumping) {
-      const jumpForce = this.gravity < 0.4 ? -9 : -12.5; // Stronger jump (-11 -> -12.5) to ensure gaps are crossable
+      const jumpForce = this.gravity < 0.4 ? -8.5 : -11.2; // Tuned for smoother arcs with lower gravity
       this.velY = jumpForce;
       this.isJumping = true;
       this.jumpHeld = true;
@@ -137,7 +137,7 @@ export class Player {
 
     // Variable jump height – release up to cut jump short
     if (this.isJumping && !inputs.up && !this.jumpCutoff && this.velY < -3) {
-      this.velY *= 0.5;
+      this.velY *= 0.55;
       this.jumpCutoff = true;
     }
 

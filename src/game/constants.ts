@@ -14,11 +14,11 @@ export const TILE_BRIDGE = 4;    // Walkable bridge
 export const TILE_SPECIAL = 5;   // Moss / themed solid
 
 // Physics
-export const BASE_GRAVITY = 0.55;
-export const MOON_GRAVITY = 0.22;
-export const MAX_FALL_SPEED = 12;
-export const COYOTE_FRAMES = 6;
-export const JUMP_BUFFER_FRAMES = 5;
+export const BASE_GRAVITY = 0.48;
+export const MOON_GRAVITY = 0.18;
+export const MAX_FALL_SPEED = 10;
+export const COYOTE_FRAMES = 8;
+export const JUMP_BUFFER_FRAMES = 7;
 
 // -- Color palettes per level theme --
 export const THEME_COLORS: Record<string, Record<string, string>> = {

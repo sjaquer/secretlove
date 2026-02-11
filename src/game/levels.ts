@@ -77,8 +77,8 @@ function buildCastle(): LevelData {
   
   // The Great Hall
   rect(t, W, 42, 10, 65, 12, TILE_GROUND); 
-  vLine(t, W, 46, 6, 4, TILE_SPECIAL);
-  vLine(t, W, 54, 6, 4, TILE_SPECIAL);
+  vLine(t, W, 46, 5, 3, TILE_SPECIAL); // Shortened: y=5,6,7 (above walkway)
+  vLine(t, W, 54, 5, 3, TILE_SPECIAL); // Shortened: y=5,6,7 (above walkway)
   hLine(t, W, 49, 5, 3, TILE_PLATFORM);
   hLine(t, W, 57, 5, 3, TILE_PLATFORM);
   
@@ -193,7 +193,10 @@ function buildRooftop(): LevelData {
   
   // Final Plaza (High up)
   rect(t, W, 110, 6, 125, 13, TILE_GROUND);
-  buildArch(t, W, 114, 6, 4, 4);
+  // Decorative columns (non-blocking, above walkway)
+  vLine(t, W, 114, 2, 3, TILE_SPECIAL);
+  vLine(t, W, 119, 2, 3, TILE_SPECIAL);
+  hLine(t, W, 114, 1, 6, TILE_PLATFORM);
 
   return {
     width: W, height: H, tiles: t,
@@ -212,7 +215,7 @@ function buildRooftop(): LevelData {
     ],
     torches: [],
     checkpoints: [
-      { x: 42 * TILE_SIZE, y: 5 * TILE_SIZE },
+      { x: 42 * TILE_SIZE, y: 4 * TILE_SIZE },  // 1 tile above House 2 surface (y=5)
       { x: 82 * TILE_SIZE, y: 9 * TILE_SIZE },
       { x: 110 * TILE_SIZE, y: 5 * TILE_SIZE },
     ],
@@ -271,7 +274,7 @@ function buildSwamp(): LevelData {
   hLine(t, W, 120, 7, 3, TILE_PLATFORM);
   hLine(t, W, 125, 7, 2, TILE_PLATFORM); // Extra help
   rect(t, W, 129, 6, 139, 13, TILE_GROUND);
-  buildTree(t, W, 134, 6);
+  buildTree(t, W, 137, 6); // Moved past portal (x=134) so it doesn't block path
 
   return {
     width: W, height: H, tiles: t,
@@ -292,7 +295,7 @@ function buildSwamp(): LevelData {
     ],
     torches: [],
     checkpoints: [
-      { x: 42 * TILE_SIZE, y: 6 * TILE_SIZE },
+      { x: 40 * TILE_SIZE, y: 5 * TILE_SIZE },  // Moved off tree trunk (x=42 is solid), 1 tile above platform
       { x: 92 * TILE_SIZE, y: 7 * TILE_SIZE },
     ],
   };
@@ -352,12 +355,12 @@ function buildDesert(): LevelData {
   // Sphinx
   rect(t, W, 118, 9, 130, 14, TILE_GROUND);
   rect(t, W, 118, 7, 122, 9, TILE_GROUND);
-  rect(t, W, 120, 6, 121, 6, TILE_SPECIAL);
+  // Eyes removed (were blocking portal access)
 
   return {
     width: W, height: H, tiles: t,
     startX: 2 * TILE_SIZE, startY: 10 * TILE_SIZE,
-    portalX: 121 * TILE_SIZE, portalY: 5 * TILE_SIZE,
+    portalX: 120 * TILE_SIZE, portalY: 6 * TILE_SIZE, // On sphinx head surface
     enemies: [
       { x: 19, y: 9, type: 'bat', patrolLeft: 14, patrolRight: 24 },
       { x: 30, y: 9, type: 'scorpion', patrolLeft: 28, patrolRight: 35 },
@@ -406,7 +409,7 @@ function buildMoon(): LevelData {
   // Alien Structure
   rect(t, W, 58, 7, 70, 9, TILE_SPECIAL);
   hLine(t, W, 58, 6, 13, TILE_PLATFORM);
-  rect(t, W, 62, 3, 66, 6, TILE_SPECIAL);
+  rect(t, W, 62, 1, 66, 4, TILE_SPECIAL); // Raised tower (doesn't block walkway at y=5)
   
   // Asteroid Field (Closer & more platforms)
   hLine(t, W, 74, 8, 3, TILE_PLATFORM);
@@ -416,8 +419,8 @@ function buildMoon(): LevelData {
   hLine(t, W, 94, 7, 3, TILE_PLATFORM);
   
   // Large Moon Base
-  rect(t, W, 100, 10, 130, 14, TILE_GROUND); // Extened to left
-  rect(t, W, 110, 6, 125, 9, TILE_SPECIAL); 
+  rect(t, W, 100, 10, 130, 14, TILE_GROUND);
+  rect(t, W, 110, 6, 125, 8, TILE_SPECIAL); // Shortened: y=6-8 (player walks under at y=9)
   hLine(t, W, 112, 5, 10, TILE_PLATFORM);
   
   // Ascent
@@ -446,7 +449,7 @@ function buildMoon(): LevelData {
     checkpoints: [
       { x: 30 * TILE_SIZE, y: 6 * TILE_SIZE },
       { x: 64 * TILE_SIZE, y: 5 * TILE_SIZE },
-      { x: 110 * TILE_SIZE, y: 9 * TILE_SIZE },
+      { x: 105 * TILE_SIZE, y: 9 * TILE_SIZE },  // Moved before ceiling structure (x=110 has 1-tile gap)
     ],
   };
 }
