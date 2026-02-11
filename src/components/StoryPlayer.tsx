@@ -18,6 +18,40 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Función para parsear y formatear la narrativa
+function parseNarrative(narrative: string) {
+  const sections = narrative.split(/\n\s*\n/); // Separar por dobles saltos de línea
+  const paragraphs: string[] = [];
+  const options: string[] = [];
+  let isOptionSection = false;
+
+  for (let section of sections) {
+    section = section.trim();
+    if (!section) continue;
+
+    // Detectar si llegamos a la sección de opciones
+    if (section.toLowerCase().includes('opciones para la tortuga:')) {
+      isOptionSection = true;
+      continue;
+    }
+
+    if (isOptionSection) {
+      // Parsear opciones numeradas
+      const lines = section.split('\n').map(line => line.trim()).filter(line => line);
+      for (const line of lines) {
+        if (line.match(/^\d+\./)) {
+          options.push(line);
+        }
+      }
+    } else {
+      // Es un párrafo de narrativa
+      paragraphs.push(section);
+    }
+  }
+
+  return { paragraphs, options };
+}
+
 export function StoryPlayer() {
   const [story, setStory] = useState<InteractiveStoryOutput | null>(null);
   const [loading, setLoading] = useState(true);
@@ -129,13 +163,50 @@ export function StoryPlayer() {
                 {story?.narrative && !error && (
                     <div className="prose prose-pink max-w-none">
                         <div className={`transition-all duration-700 ${loading ? 'opacity-50 blur-[1px]' : 'opacity-100 blur-0'}`}>
-                            {/* Decorative drop cap or icon */}
-                            <p className="text-lg sm:text-xl md:text-2xl leading-loose font-serif text-slate-700 first-letter:float-left first-letter:text-5xl first-letter:pr-3 first-letter:font-black first-letter:text-pink-400/80">
-                                {story.narrative}
-                            </p>
+                            {(() => {
+                                const { paragraphs, options } = parseNarrative(story.narrative);
+                                
+                                return (
+                                    <>
+                                        {/* Párrafos de narrativa */}
+                                        {paragraphs.map((paragraph, index) => (
+                                            <div key={index} className="mb-6">
+                                                <p className={`text-lg sm:text-xl leading-relaxed font-serif text-slate-700 ${
+                                                    index === 0 
+                                                        ? 'first-letter:float-left first-letter:text-4xl first-letter:pr-2 first-letter:font-black first-letter:text-pink-400/80 first-letter:leading-none' 
+                                                        : ''
+                                                }`}>
+                                                    {paragraph}
+                                                </p>
+                                            </div>
+                                        ))}
+
+                                        {/* Opciones para la tortuga */}
+                                        {options.length > 0 && (
+                                            <div className="mt-8 pt-6 border-t border-pink-100/50">
+                                                <h3 className="text-base font-semibold text-pink-600/80 mb-4 tracking-wide">
+                                                    Opciones para la tortuga:
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {options.map((option, index) => (
+                                                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-pink-50/30 border border-pink-100/40 hover:bg-pink-50/50 transition-colors">
+                                                            <span className="flex-shrink-0 w-6 h-6 bg-pink-200/60 text-pink-700 text-sm font-bold rounded-full flex items-center justify-center">
+                                                                {option.match(/^(\d+)/)?.[1] || (index + 1)}
+                                                            </span>
+                                                            <p className="text-base text-slate-600 leading-relaxed">
+                                                                {option.replace(/^\d+\.\s*/, '')}
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
                         </div>
                         {loading && (
-                            <div className="flex items-center gap-2 mt-4 text-pink-300/60 animate-pulse">
+                            <div className="flex items-center gap-2 mt-6 text-pink-300/60 animate-pulse">
                                 <Sparkles className="w-4 h-4" />
                                 <span className="text-xs italic">La historia continúa...</span>
                             </div>
