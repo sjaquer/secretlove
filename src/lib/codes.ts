@@ -6,4 +6,5 @@ export const secretCodes: Record<string, string> = {
   'CANCION': '/canciones',
   'TAMMV': '/video',
   'NUNTIUS AD DILECTUM MEUM': '/juego',
+  'HEX9821': '/collage',
 };

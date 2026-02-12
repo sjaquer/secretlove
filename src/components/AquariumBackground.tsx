@@ -30,7 +30,7 @@ interface Bubble {
   opacity: number;
 }
 
-export function AquariumBackground() {
+export function AquariumBackground({ bubblesOnly = false }: { bubblesOnly?: boolean }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [fish, setFish] = useState<SwimmingFish[]>([]);
   const [corals, setCorals] = useState<Coral[]>([]);
@@ -46,6 +46,7 @@ export function AquariumBackground() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
+    if (!bubblesOnly) {
     // Peces nadando - gran variedad de especies marinas
     const fishEmojis = ['🐠', '🐟', '🐡', '🐬', '🐳', '🦈', '🐙', '🦑', '🐢', '🦭', '🐋', '🦐', '🦞', '🦀', '🪼'];
     const generatedFish: SwimmingFish[] = Array.from({ length: 22 }, (_, i) => ({
@@ -70,6 +71,7 @@ export function AquariumBackground() {
       delay: Math.random() * 4,
     }));
     setCorals(generatedCorals);
+    }
 
     // Burbujas subiendo
     const generatedBubbles: Bubble[] = Array.from({ length: 70 }, (_, i) => ({
@@ -93,6 +95,7 @@ export function AquariumBackground() {
     }));
     setParticles(generatedParticles);
 
+    if (!bubblesOnly) {
     const generatedSparkles = Array.from({ length: 12 }, (_, i) => ({
       id: i,
       left: 8 + Math.random() * 84,
@@ -100,6 +103,7 @@ export function AquariumBackground() {
       delay: Math.random() * 4,
     }));
     setSparkles(generatedSparkles);
+    }
 
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -221,6 +225,7 @@ export function AquariumBackground() {
         ))}
       </div>
 
+      {!bubblesOnly && (<>
       {/* Capa de peces - FONDO (layer 0) - más borrosos y lentos */}
       <div className="absolute inset-0 z-[4]" style={getParallax(0)}>
         {fish.filter(f => f.layer === 0).map((f) => (
@@ -288,6 +293,7 @@ export function AquariumBackground() {
           </div>
         ))}
       </div>
+      </>)}
 
       {/* Fondo del mar con corales y plantas */}
       <div className="absolute bottom-0 left-0 w-full h-36 md:h-44 z-[8]" style={getParallax(0)}>
@@ -295,7 +301,7 @@ export function AquariumBackground() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#053f5e]/90 via-[#065a82]/50 to-transparent" />
         
         {/* Corales y plantas animados */}
-        {corals.map((coral) => (
+        {!bubblesOnly && corals.map((coral) => (
           <div
             key={`coral-${coral.id}`}
             className="absolute bottom-0 origin-bottom hover:scale-110 transition-transform duration-500 cursor-pointer"
