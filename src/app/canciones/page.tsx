@@ -18,45 +18,65 @@ interface LyricLine {
 }
 
 const LYRICS: LyricLine[] = [
-  // Verso 1
-  { time: 10.0, en: "They say, you know when you know", es: "Dicen que lo sabes cuando lo sabes" },
-  { time: 14.5, en: "So let's face it, you had me at hello", es: "Así que seamos honestos, me tuviste desde el hola" },
-  { time: 19.0, en: "Hesitation never helps", es: "Dudar nunca ayuda" },
-  { time: 22.5, en: "How could this be anything, anything else?", es: "¿Cómo podría ser otra cosa?" },
+  // Intro/Verso 1
+  { time: 8.0, en: "They say", es: "Dicen" },
+  { time: 10.5, en: "You know when you know", es: "Que lo sabes cuando lo sabes" },
+  { time: 12.5, en: "So let's face it", es: "Así que seamos honestos" },
+  { time: 15.0, en: "You had me at hello", es: "Me tuviste desde el hola" },
+  { time: 18.5, en: "Hesitation never helps", es: "Dudar nunca ayuda" },
+  { time: 22.0, en: "How could this be anything", es: "¿Cómo podría ser otra cosa" },
+  { time: 25.0, en: "Anything else?", es: "Cualquier otra cosa?" },
+
+  // Pre-Coro
+  { time: 28.0, en: "When all I dream of", es: "Cuando todo lo que sueño" },
+  { time: 30.5, en: "Is your eyes", es: "Son tus ojos" },
+  { time: 32.5, en: "All I long for", es: "Todo lo que anhelo" },
+  { time: 35.0, en: "Is your touch", es: "Es tu contacto" },
+  { time: 37.5, en: "And, darling, something tells me", es: "Y, cariño, algo me dice" },
+  { time: 40.5, en: "That's enough, mmm", es: "Que eso es suficiente" },
 
   // Coro 1
-  { time: 28.0, en: "When all I dream of is your eyes", es: "Cuando todo lo que sueño son tus ojos" },
-  { time: 32.5, en: "All I long for is your touch", es: "Todo lo que anhelo es tu contacto" },
-  { time: 37.0, en: "And, darling, something tells me that's enough, mmm", es: "Y, cariño, algo me dice que eso es suficiente" },
-  { time: 43.0, en: "You can say that I'm a fool", es: "Puedes decir que soy un tonto" },
+  { time: 43.5, en: "You can say that I'm a fool", es: "Puedes decir que soy un tonto" },
   { time: 47.0, en: "And I don't know very much", es: "Y que no sé mucho" },
-  { time: 51.0, en: "But I think they call this love", es: "Pero creo que a esto lo llaman amor" },
+  { time: 50.5, en: "But I think they call this love", es: "Pero creo que a esto lo llaman amor" },
 
   // Verso 2
-  { time: 58.0, en: "One smile, one kiss, two lonely hearts is all that it takes", es: "Una sonrisa, un beso, dos corazones solitarios es todo lo que hace falta" },
-  { time: 65.0, en: "Now, baby, you're on my mind every night, every day", es: "Ahora, cariño, estás en mi mente cada noche, cada día" },
-  { time: 72.0, en: "Good vibrations getting loud", es: "Las buenas vibras se hacen más fuertes" },
-  { time: 76.0, en: "How could this be anything, anything else?", es: "¿Cómo podría ser otra cosa?" },
+  { time: 56.0, en: "One smile, one kiss", es: "Una sonrisa, un beso" },
+  { time: 59.0, en: "Two lonely hearts", es: "Dos corazones solitarios" },
+  { time: 61.5, en: "Is all that it takes", es: "Es todo lo que hace falta" },
+  { time: 64.5, en: "Now, baby, you're on my mind", es: "Ahora, cariño, estás en mi mente" },
+  { time: 68.0, en: "Every night, every day", es: "Cada noche, cada día" },
+  { time: 71.0, en: "Good vibrations getting loud", es: "Las buenas vibras se hacen más fuertes" },
+  { time: 74.5, en: "How could this be anything", es: "¿Cómo podría ser otra cosa" },
+  { time: 77.0, en: "Anything else?", es: "Cualquier otra cosa?" },
+
+  // Pre-Coro 2
+  { time: 80.0, en: "When all I dream of", es: "Cuando todo lo que sueño" },
+  { time: 82.5, en: "Is your eyes", es: "Son tus ojos" },
+  { time: 84.5, en: "All I long for", es: "Todo lo que anhelo" },
+  { time: 87.0, en: "Is your touch", es: "Es tu contacto" },
+  { time: 89.5, en: "And darling something tells me", es: "Y cariño, algo me dice" },
+  { time: 92.5, en: "That's enough, mmm", es: "Que eso es suficiente" },
 
   // Coro 2
-  { time: 82.0, en: "When all I dream of is your eyes", es: "Cuando todo lo que sueño son tus ojos" },
-  { time: 86.5, en: "All I long for is your touch", es: "Todo lo que anhelo es tu contacto" },
-  { time: 91.0, en: "And darling something tells me that's enough, mmm", es: "Y cariño, algo me dice que eso es suficiente" },
-  { time: 97.0, en: "You can say that I'm a fool", es: "Puedes decir que soy un tonto" },
-  { time: 101.0, en: "And I don't know very much", es: "Y que no sé mucho" },
-  { time: 105.0, en: "But I think they call this love", es: "Pero creo que a esto lo llaman amor" },
-  { time: 110.0, en: "Oh, I think they call this love", es: "Oh, creo que a esto lo llaman amor" },
+  { time: 95.5, en: "You can say that I'm a fool", es: "Puedes decir que soy un tonto" },
+  { time: 99.0, en: "And I don't know very much", es: "Y que no sé mucho" },
+  { time: 102.5, en: "But I think they call this love", es: "Pero creo que a esto lo llaman amor" },
+  { time: 108.0, en: "Oh, I think they call this love", es: "Oh, creo que a esto lo llaman amor" },
 
   // Puente
-  { time: 118.0, en: "What could this be?", es: "¿Qué podría ser esto?" },
-  { time: 123.0, en: "Between you and me", es: "Entre tú y yo" },
+  { time: 116.0, en: "What could this be?", es: "¿Qué podría ser esto?" },
+  { time: 122.0, en: "Between you and me", es: "Entre tú y yo" },
 
-  // Coro 3 (final)
-  { time: 133.0, en: "All I dream of is your eyes", es: "Todo lo que sueño son tus ojos" },
-  { time: 137.5, en: "All I long for is your touch", es: "Todo lo que anhelo es tu contacto" },
-  { time: 142.0, en: "And, darling, something tells me, tells me it's enough, mmm", es: "Y, cariño, algo me dice, me dice que es suficiente" },
-  { time: 149.0, en: "You could say that I'm a fool", es: "Puedes decir que soy un tonto" },
-  { time: 153.0, en: "And I don't know very much", es: "Y que no sé mucho" },
+  // Coro Final (más lento/emotivo)
+  { time: 131.0, en: "All I dream of", es: "Todo lo que sueño" },
+  { time: 134.0, en: "Is your eyes", es: "Son tus ojos" },
+  { time: 137.0, en: "All I long for", es: "Todo lo que anhelo" },
+  { time: 139.5, en: "Is your touch", es: "Es tu contacto" },
+  { time: 142.0, en: "And, darling, something tells me", es: "Y, cariño, algo me dice" },
+  { time: 146.0, en: "Tells me it's enough, mmm", es: "Me dice que es suficiente" },
+  { time: 150.0, en: "You could say that I'm a fool", es: "Puedes decir que soy un tonto" },
+  { time: 153.5, en: "And I don't know very much", es: "Y que no sé mucho" },
   { time: 157.0, en: "But I think they call", es: "Pero creo que lo llaman" },
   { time: 161.0, en: "Oh, I think they call", es: "Oh, creo que lo llaman" },
   { time: 165.0, en: "Yes, I think they call this love", es: "Sí, creo que a esto lo llaman amor" },
