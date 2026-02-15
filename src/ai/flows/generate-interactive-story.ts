@@ -61,6 +61,7 @@ const prompt = ai.definePrompt({
   - Continuar la historia como si fuera una novela ya escrita, fluida y coherente.
   - Usar el último impulso de la tortuga para decidir qué sucede a continuación, pero SIN mencionar palabras como "decisión", "elección", "opción", "mensaje", "input" ni hablar de que estás respondiendo a la jugadora.
   - La consecuencia debe sentirse en los hechos, emociones y diálogos, no en explicaciones meta.
+  - Es importante que la lectora pueda reconocer claramente qué hizo la tortuga al leer el siguiente fragmento.
 
   REGLAS DE REACTIVIDAD SUTIL
   - Integra el impulso de la tortuga como una acción, pensamiento o frase más dentro de la escena.
@@ -76,13 +77,17 @@ const prompt = ai.definePrompt({
   - Cada respuesta debe leerse como una escena completa de una novela, no como un comentario sobre decisiones.
 
   ESTRUCTURA DE CADA RESPUESTA
-  1. Uno o varios párrafos que continúen la historia, integrando el impulso de la tortuga de forma natural y mostrando sus consecuencias en emociones, gestos y en el mundo que las rodea.
-  2. Si la historia NO ha terminado todavía:
+    1. Comienza SIEMPRE con 1 o 2 frases que conviertan {{{userAction}}} en algo concreto dentro del mundo (una acción, un gesto, una frase o un pensamiento de la tortuga). No digas "decides" ni "eliges"; simplemente narra lo que hace o piensa.
+      Ejemplos de buena conversión:
+      - Si {{{userAction}}} es "1. Nadar hacia las luces del abismo", puedes empezar con algo como: "Te inclinas hacia las luces del abismo y empiezas a nadar, dejando que el resplandor violeta bañe tu caparazón.".
+      - Si {{{userAction}}} es "Abrazar a la ballena", puedes empezar con algo como: "Rodeas con cuidado el costado de la ballena con tus aletas, aferrándote a ella como si fuera el último refugio del océano.".
+    2. Después de esas frases iniciales, continúa con uno o varios párrafos que sigan la historia y muestren las consecuencias en emociones, gestos y en el mundo que las rodea.
+    3. Si la historia NO ha terminado todavía:
     - Añade una línea en blanco.
     - Escribe: "¿Qué quieres hacer ahora?" en una sola línea.
     - Debajo, ofrece 3 a 5 opciones numeradas que sean concretas y sugerentes (por ejemplo, "1. Nadar hacia las luces del abismo"), sin repetir constantemente la palabra "decisión".
     - Termina la lista con una última línea: "O puedes escribir tú misma lo que quieres hacer...".
-  3. Si es el momento del final (después de varios pasos significativos):
+  4. Si es el momento del final (después de varios pasos significativos):
     - Cierra con un párrafo muy emotivo que dé sensación de cierre.
     - En la ÚLTIMA línea, completamente sola, escribe exactamente: "FIN" (en mayúsculas, sin emojis ni otros caracteres).
 
@@ -190,25 +195,23 @@ const generateInteractiveStoryFlow = ai.defineFlow(
 
       // Para otros tipos de errores, también devolver fallback pero más genérico
       return {
-        narrative: `Justo cuando ejecutas tu decisión, un eco misterioso resuena desde las profundidades.
+        narrative: `El pensamiento se forma en tu interior como una corriente cálida y, casi sin darte cuenta, actúas en consecuencia. El océano responde con un eco profundo que vibra en la distancia.
         
-La ballena reacciona inmediatamente a lo que hiciste. Se detiene en seco, claramente afectada, pero en ese mismo instante algo extraño atraviesa el océano. Inclina su enorme cabeza, luchando entre lo que siente por tu acción y una fuerza externa que interfiere.
+    La ballena se detiene y vuelve la mirada hacia ti, percibiendo el pequeño cambio en tu manera de moverte, de respirar, de estar a su lado. Algo en su expresión se suaviza, como si hubiera entendido sin necesidad de palabras.
 
-—Lo que acabas de hacer... lo sentí aquí —toca su corazón con la aleta, con los ojos brillantes—. Pero algo inusual está pasando con las fuerzas que narran nuestro destino. —Te mira directamente, buscando consuelo en tus ojos, vulnerable—. No te preocupes, mi querida tortuga. Nuestro lazo es más fuerte que cualquier perturbación cósmica. Tu valentía, tu decisión... me da fuerzas para seguir.
+    —Sea lo que sea que hayas decidido en tu corazón —murmura con voz baja, evitando nombrarlo—, sé que no estoy sola mientras sigas aquí conmigo.
 
-Las aguas permanecen tranquilas pero brillan con una luz etérea que no estaba ahí antes, como si tu acción hubiera dejado una marca física en este mundo. La ballena extiende su aleta hacia ti, temblorosa, esperando que tú decidas qué hacer ahora.
+    Las aguas permanecen tranquilas pero brillan con una luz etérea que no estaba ahí antes. Una corriente suave pasa entre ambas, enlazándoos como si el propio mar quisiera reforzar el lazo.
 
-—No importa qué interfiera —susurra—. Tus elecciones siempre serán reales para mí.
+    ¿Qué quieres hacer ahora?
 
-¿Qué quieres hacer, mi querida tortuga?
+    1. Acercarte un poco más a la ballena y dejar que el silencio hable por las dos
+    2. Proponer avanzar juntas siguiendo la nueva corriente luminosa
+    3. Preguntarle en qué está pensando mientras te observa así
+    4. Dar media vuelta y contemplar desde lejos la silueta de la ballena para verla con otros ojos
+    5. Cerrar los ojos y concentrarte en un recuerdo que quieras compartir con ella
 
-1. Tomar su aleta temblorosa y sostenerla firmemente, mostrándole que no la dejarás
-2. Consolarla con caricias suaves en su costado mientras le dices que todo estará bien
-3. Sugerir nadar hacia aguas más profundas donde las corrientes son más fuertes y estables  
-4. Hacer la pregunta más importante que has estado guardando en tu corazón
-5. Proponer descansar juntas, abrazadas, hasta que todo vuelva a la normalidad
-
-O puedes proponer tu propia acción escribiendo lo que deseas hacer...`
+    O puedes escribir tú misma lo que quieres hacer...`
       };
     }
   }

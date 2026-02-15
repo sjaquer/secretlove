@@ -74,6 +74,7 @@ export function StoryPlayer() {
   const [lastRequestTime, setLastRequestTime] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const pendingRequestRef = useRef<string | null>(null);
+    const lastOptionsRef = useRef<string[]>([]);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -131,7 +132,19 @@ export function StoryPlayer() {
   }, [fetchStory]);
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    fetchStory(data.userAction);
+        const raw = data.userAction.trim();
+        let resolvedAction = raw;
+
+        // Si el usuario escribe solo un número y hay opciones, usar el texto de esa opción
+        if (story && lastOptionsRef.current.length > 0 && /^\d+$/.test(raw)) {
+            const index = parseInt(raw, 10) - 1;
+            if (index >= 0 && index < lastOptionsRef.current.length) {
+                const opt = lastOptionsRef.current[index];
+                resolvedAction = opt.replace(/^\d+\.\s*/, '');
+            }
+        }
+
+        fetchStory(resolvedAction);
   };
   
   const restartStory = () => {
@@ -154,6 +167,16 @@ export function StoryPlayer() {
         }, 100);
     }
   }, [story]);
+
+    // Mantener en memoria las últimas opciones mostradas para poder mapear "1", "2", etc.
+    useEffect(() => {
+        if (!story) {
+            lastOptionsRef.current = [];
+            return;
+        }
+        const { options } = parseNarrative(story.narrative);
+        lastOptionsRef.current = options;
+    }, [story]);
 
   return (
     <div className="w-full h-full flex flex-col relative">
