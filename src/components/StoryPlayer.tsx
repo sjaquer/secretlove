@@ -23,15 +23,28 @@ function parseNarrative(narrative: string) {
   const sections = narrative.split(/\n\s*\n/); // Separar por dobles saltos de línea
   const paragraphs: string[] = [];
   const options: string[] = [];
+  let questionPrompt = '';
+  let customActionPrompt = '';
   let isOptionSection = false;
 
   for (let section of sections) {
     section = section.trim();
     if (!section) continue;
 
-    // Detectar si llegamos a la sección de opciones
-    if (section.toLowerCase().includes('opciones para la tortuga:')) {
+    // Detectar si llegamos a la sección de pregunta/opciones
+    if (section.toLowerCase().includes('¿qué quieres hacer') || 
+        section.toLowerCase().includes('opciones para la tortuga:')) {
       isOptionSection = true;
+      if (section.includes('?')) {
+        questionPrompt = section;
+      }
+      continue;
+    }
+
+    // Detectar la invitación a escribir una acción propia
+    if (section.toLowerCase().includes('puedes proponer tu propia acción') ||
+        section.toLowerCase().includes('o puedes')) {
+      customActionPrompt = section;
       continue;
     }
 
@@ -49,7 +62,7 @@ function parseNarrative(narrative: string) {
     }
   }
 
-  return { paragraphs, options };
+  return { paragraphs, options, questionPrompt, customActionPrompt };
 }
 
 export function StoryPlayer() {
@@ -185,7 +198,7 @@ export function StoryPlayer() {
                     <div className="prose prose-pink max-w-none">
                         <div className={`transition-all duration-700 ${loading ? 'opacity-50 blur-[1px]' : 'opacity-100 blur-0'}`}>
                             {(() => {
-                                const { paragraphs, options } = parseNarrative(story.narrative);
+                                const { paragraphs, options, questionPrompt, customActionPrompt } = parseNarrative(story.narrative);
                                 
                                 return (
                                     <>
@@ -202,15 +215,26 @@ export function StoryPlayer() {
                                             </div>
                                         ))}
 
+                                        {/* Pregunta para la tortuga */}
+                                        {questionPrompt && (
+                                            <div className="mt-8 pt-6 border-t border-pink-100/50">
+                                                <h3 className="text-lg font-semibold text-pink-600 mb-5 italic">
+                                                    {questionPrompt}
+                                                </h3>
+                                            </div>
+                                        )}
+
                                         {/* Opciones para la tortuga */}
                                         {options.length > 0 && (
-                                            <div className="mt-8 pt-6 border-t border-pink-100/50">
-                                                <h3 className="text-base font-semibold text-pink-600/80 mb-4 tracking-wide">
-                                                    Opciones para la tortuga:
-                                                </h3>
-                                                <div className="space-y-3">
+                                            <div className={questionPrompt ? "" : "mt-8 pt-6 border-t border-pink-100/50"}>
+                                                {!questionPrompt && (
+                                                    <h3 className="text-base font-semibold text-pink-600/80 mb-4 tracking-wide">
+                                                        Opciones para la tortuga:
+                                                    </h3>
+                                                )}
+                                                <div className="space-y-3 mb-4">
                                                     {options.map((option, index) => (
-                                                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-pink-50/30 border border-pink-100/40 hover:bg-pink-50/50 transition-colors">
+                                                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-pink-50/30 border border-pink-100/40 hover:bg-pink-50/50 transition-colors cursor-help">
                                                             <span className="flex-shrink-0 w-6 h-6 bg-pink-200/60 text-pink-700 text-sm font-bold rounded-full flex items-center justify-center">
                                                                 {option.match(/^(\d+)/)?.[1] || (index + 1)}
                                                             </span>
@@ -220,6 +244,15 @@ export function StoryPlayer() {
                                                         </div>
                                                     ))}
                                                 </div>
+                                            </div>
+                                        )}
+
+                                        {/* Invitación a acción personalizada */}
+                                        {customActionPrompt && (
+                                            <div className="mt-4 text-center">
+                                                <p className="text-sm text-pink-400 italic">
+                                                    {customActionPrompt}
+                                                </p>
                                             </div>
                                         )}
                                     </>
@@ -248,7 +281,7 @@ export function StoryPlayer() {
                                 <FormControl>
                                     <div className="relative shadow-sm rounded-xl transition-shadow duration-300 focus-within:shadow-md focus-within:ring-2 focus-within:ring-pink-100">
                                         <Textarea
-                                            placeholder="¿Qué quieres hacer ahora? (ej. explorar el bosque, hablar con ella...)"
+                                            placeholder="Escribe tu decisión o elige una opción numerada (ej. '1' o 'abrazar a la ballena')..."
                                             className="pr-14 sm:pr-20 py-4 pl-5 text-base min-h-[70px] resize-none border-pink-100 bg-pink-50/30 focus:bg-white focus:border-pink-300 rounded-xl transition-all placeholder:text-pink-300/70 text-slate-700"
                                             disabled={loading || hasEnded}
                                             onKeyDown={(e) => {
