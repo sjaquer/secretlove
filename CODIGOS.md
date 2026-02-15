@@ -8,10 +8,11 @@ Esta es la lista completa de códigos disponibles para acceder a las diferentes 
 |--------|-------------|-------------------|
 | **OTOÑO** | Primera historia de amor | `/story` - Reproductor de historias interactivas |
 | **AMOR** | Rompecabezas romántico | `/puzzle` - Juego de rompecabezas |
-| **HORTENSIA** | Tarjeta especial | `/card` - Tarjeta de amor personalizada |
+| **TODO MAL SIN TI** | Tarjeta especial con poema | `/card` - Tarjeta de amor personalizada |
 | **CANCION** | Música del corazón | `/canciones` - Canciones románticas |
 | **TAMMV** | Video sorpresa | `/video` - Video especial |
-| **CARTA** | *(Próximamente)* | Contenido por revelar |
+| **NUNTIUS AD DILECTUM MEUM** | Juego especial del 14 de febrero | `/juego` - La Búsqueda de los Tulipanes |
+| **HEX9821** | Collage de recuerdos | `/collage` - Collage de fotos especiales |
 
 ## 🎯 Cómo usar los códigos
 
@@ -23,13 +24,13 @@ Esta es la lista completa de códigos disponibles para acceder a las diferentes 
 ## ❤️ Funcionalidades especiales
 
 ### Cuenta Regresiva
-- La página muestra una cuenta regresiva hasta el **14 de febrero de 2026**
-- Cuando llegue la fecha, la cuenta regresiva desaparecerá automáticamente
+- La página mostraba una cuenta regresiva hasta el **14 de febrero de 2026**
+- ✅ **¡La fecha ya llegó!** El código del juego especial se reveló automáticamente
 
 ### Recuerdos Desbloqueados
-- Haz clic **5 veces** en el corazón ❤️ para ver todos los códigos que has desbloqueado
+- Haz clic en el corazón ❤️ para ver todos los códigos que has desbloqueado
 - Los códigos desbloqueados se guardan automáticamente en tu navegador
-- Puedes acceder rápidamente a cualquier sección previamente visitada
+- Puedes acceder rápidamente a cualquier sección previamente visitada desde el diálogo
 
 ## 💡 Notas
 

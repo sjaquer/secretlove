@@ -35,6 +35,7 @@ const codeMetadata: Record<string, { description: string; icon: any }> = {
   'CANCION': { description: 'Playlist de canciones especiales', icon: Music },
   'TAMMV': { description: 'Video especial', icon: Video },
   'NUNTIUS AD DILECTUM MEUM': { description: 'La Búsqueda de los Tulipanes - Juego', icon: Gamepad2 },
+  'HEX9821': { description: 'Collage de recuerdos especiales', icon: Mail },
 };
 
 export function CodeGate() {
@@ -54,20 +55,23 @@ export function CodeGate() {
       setUnlockedCodes(JSON.parse(storedCodes));
     }
 
-    // Verificar si la cuenta regresiva ya terminó
-    const completed = localStorage.getItem(COUNTDOWN_COMPLETED_KEY);
-    if (completed === 'true') {
-      setCountdownCompleted(true);
-    }
-
     // Fecha fija para el 14 de febrero de 2026
     const valentinesDay = new Date('2026-02-14T00:00:00');
     setTargetDate(valentinesDay);
     
     // Verificar si ya pasó la fecha
-    if (new Date() >= valentinesDay) {
+    const now = new Date();
+    if (now >= valentinesDay) {
       setCountdownCompleted(true);
+      setShowCodeReveal(true); // Mostrar el código inmediatamente si ya pasó la fecha
       localStorage.setItem(COUNTDOWN_COMPLETED_KEY, 'true');
+    } else {
+      // Verificar si la cuenta regresiva ya terminó anteriormente
+      const completed = localStorage.getItem(COUNTDOWN_COMPLETED_KEY);
+      if (completed === 'true') {
+        setCountdownCompleted(true);
+        setShowCodeReveal(true);
+      }
     }
   }, []);
 
