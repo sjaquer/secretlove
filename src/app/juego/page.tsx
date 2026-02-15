@@ -452,7 +452,7 @@ export default function JuegoPage() {
 
         {/* Mobile controls */}
         {gameStarted && !gameWon && !showRecap && !showGoodEnding && !showBadEnding && !showPauseMenu && !showMenu && !showLevelIntro && (
-          <div className="lg:hidden absolute inset-0 pointer-events-none" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
+          <div className="lg:hidden absolute inset-0 pointer-events-none z-40" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
             <button className="absolute bottom-3 left-3 w-14 h-14 bg-black/40 rounded-full border-2 border-white/50 flex items-center justify-center text-xl text-white pointer-events-auto active:bg-white/30 transition-all select-none"
               onTouchStart={e => { e.preventDefault(); handleTouch('left', true); }}
               onTouchEnd={e => { e.preventDefault(); handleTouch('left', false); }}
