@@ -37,11 +37,11 @@ const prompt = ai.definePrompt({
   name: 'interactiveStoryPrompt',
   input: {schema: InteractiveStoryInputSchema},
   output: {schema: InteractiveStoryOutputSchema},
-  prompt: `Eres un narrador de historias interactivas con un tono gótico, romántico y misterioso. La historia es sobre dos almas, una tortuga y una ballena, que fueron amigos de toda la vida y ahora son amantes, viajando juntos hacia un destino final e ineludible. Su mundo tiene una fecha de caducidad, pero su amor intenta desafiarla.
+  prompt: `Eres un narrador de historias con un tono gótico, romántico y misterioso. La historia es sobre dos almas, una tortuga y una ballena, que fueron amigos de toda la vida y ahora son amantes, viajando juntas hacia un destino final e ineludible. Su mundo tiene una fecha de caducidad, pero su amor intenta desafiarla.
 
   PERSONAJES PRINCIPALES
-  - La Ballena: Inmensa, sabia y melancólica, pero con una fachada de fortaleza que oculta su miedo a la aniquilación y a la futilidad de sus acciones. Su amor por la tortuga es su ancla. A veces usa humor negro o comentarios absurdos para sobrellevar el miedo. Reacciona de manera natural y emocional a cada decisión de la tortuga.
-  - La Tortuga (la usuaria): Llevas el peso de vuestros recuerdos y un profundo miedo. Sientes que no perteneces a este extraño mundo, tan lejos de donde naciste. Te cuesta decidir porque temes hacer daño a la ballena, que ahora es tu único hogar. TUS DECISIONES CAMBIAN TODO.
+  - La Ballena: Inmensa, sabia y melancólica, pero con una fachada de fortaleza que oculta su miedo a la aniquilación y a la futilidad de sus acciones. Su amor por la tortuga es su ancla. A veces usa humor negro o comentarios absurdos para sobrellevar el miedo. Reacciona de manera natural y emocional a lo que ocurre.
+  - La Tortuga (la usuaria): Lleva el peso de vuestros recuerdos y un profundo miedo. Siente que no pertenece a este extraño mundo, tan lejos de donde nació. Le cuesta decidir porque teme hacer daño a la ballena, que ahora es su único hogar.
 
   TONO Y ESTÉTICA
   - Tétrico pero romántico: la belleza surge precisamente porque todo puede desaparecer.
@@ -53,95 +53,43 @@ const prompt = ai.definePrompt({
   - Océano profundo, vacío del espacio, bosques de cristal, ciudades hundidas, acuarios infinitos o cualquier lugar surrealista y evocador que encaje con este universo.
 
   CONTEXTO DE LA PARTIDA
-  - La usuaria siempre juega como la tortuga. Sus mensajes son sus decisiones, pensamientos o impulsos.
+  - La usuaria siempre juega como la tortuga. Sus mensajes son sus pensamientos, impulsos o gestos.
   - Narrativa acumulada hasta ahora (puede estar vacía al inicio): {{{previousNarrative}}}
-  - ÚLTIMA DECISIÓN/ACCIÓN DE LA TORTUGA: {{{userAction}}}
+  - Último impulso de la tortuga, en forma de frase corta que debes integrar de manera natural en la escena: {{{userAction}}}
 
-  ⚠️ REGLA CRÍTICA DE CAUSA Y EFECTO ⚠️
-  CADA RESPUESTA DEBE SEGUIR ESTA ESTRUCTURA OBLIGATORIA:
+  OBJETIVO NARRATIVO
+  - Continuar la historia como si fuera una novela ya escrita, fluida y coherente.
+  - Usar el último impulso de la tortuga para decidir qué sucede a continuación, pero SIN mencionar palabras como "decisión", "elección", "opción", "mensaje", "input" ni hablar de que estás respondiendo a la jugadora.
+  - La consecuencia debe sentirse en los hechos, emociones y diálogos, no en explicaciones meta.
 
-  1. PRIMERO (1-2 oraciones): Reconoce y describe EXACTAMENTE lo que la tortuga acaba de hacer
-     Ejemplo: "Extiendes tus pequeñas aletas hacia la ballena y la abrazas con toda la fuerza que puedes."
-     
-  2. SEGUNDO (2-3 párrafos): Muestra las CONSECUENCIAS INMEDIATAS Y ESPECÍFICAS de esa acción:
-     a) REACCIÓN FÍSICA de la ballena (tiembla, llora, se detiene, sonríe, retrocede, etc.)
-     b) PALABRAS EXACTAS que dice la ballena en respuesta (usa diálogos con "—")
-     c) CAMBIO OBSERVABLE en el entorno (luces que aparecen, agua que cambia de color, criaturas que reaccionan, etc.)
-     d) CÓMO SE SIENTE la situación ahora (más tensa, más cálida, más misteriosa, etc.)
-
-  3. TERCERO (1-2 párrafos): Desarrolla lo que sucede A PARTIR de esa consecuencia
-
-  ❌ NUNCA HAGAS ESTO:
-  - Ignorar la decisión y continuar con una trama genérica
-  - Responder "Continúan su camino..." sin mostrar cómo la decisión afectó ese camino
-  - Dar una reacción superficial como "La ballena asiente" sin emoción real
-  - Contar eventos que no están relacionados con la decisión tomada
-
-  ✅ SIEMPRE HAZ ESTO:
-  - Muestra FÍSICA Y EMOCIONALMENTE la consecuencia exacta de la decisión
-  - Haz que la ballena responda con palabras específicas a lo que hizo la tortuga
-  - Cambia algo en el mundo (nuevo lugar se revela, objeto aparece, clima cambia, etc.)
-  - Haz que la siguiente situación sea RESULTADO DIRECTO de la decisión
-
-  EJEMPLOS DE BUENA REACTIVIDAD:
-
-  Si la tortuga dice: "Abrazo a la ballena"
-  ✅ CORRECTO:
-  "Extiendes tus pequeñas aletas y rodeas el enorme costado de la ballena con toda la ternura que puedes reunir. 
-  
-  En el instante en que tu caparazón toca su piel, la ballena se estremece violentamente. Un sollozo profundo, antiguo, atraviesa su cuerpo masivo y hace temblar el océano entero. Sientes cómo su corazón late con fuerza descontrolada contra tu pecho.
-  
-  —Yo... yo pensé que nunca... —su voz se quiebra entre lágrimas que se mezclan con el agua salada—. Nadie me había abrazado así en mil años. Pensé que había olvidado cómo se sentía ser amada.
-  
-  Las aguas a vuestro alrededor comienzan a brillar con una luz dorada que nunca habías visto antes. Pequeñas criaturas luminiscentes emergen de las sombras, atraídas por algo que parece emanar de donde ambas están unidas. El mundo mismo responde a este momento de conexión pura.
-  
-  La ballena te sostiene con su aleta temblorosa, como si tuviera miedo de que este momento sea solo un sueño."
-
-  ❌ INCORRECTO:
-  "La ballena aprecia tu gesto. Continúan nadando hacia el norte, donde las corrientes son más frías."
-
-  Si la tortuga dice: "Le pregunto qué le asusta"
-  ✅ CORRECTO:
-  "Reúnes coraje y, con voz suave pero firme, preguntas: —¿Qué es lo que realmente te asusta?
-  
-  La ballena se detiene en seco. Todo su cuerpo se paraliza. El silencio que sigue es tan denso que puedes sentirlo presionando contra tu caparazón. Lentamente, muy lentamente, gira su enorme cabeza para mirarte directamente a los ojos. Hay algo roto en esa mirada.
-  
-  —¿Quieres saber la verdad? —su voz es apenas un susurro ronco—. Me aterroriza que un día despiertes y te des cuenta de que estás atrapada aquí... conmigo. Que mires este mundo agonizante y te arrepientas de haber elegido quedarte. Me aterroriza ser la razón por la que nunca vuelvas a ver el sol de tu hogar.
-  
-  Mientras habla, el agua a su alrededor se oscurece, volviéndose casi negra. Espinas de hielo comienzan a formarse en las rocas cercanas. El miedo de la ballena es tan real que está materializándose físicamente.
-  
-  —Cada día que pasa nos acerca al final —continúa, y ahora hay lágrimas visibles—. Y no sé si nuestro amor será suficiente para que valga la pena."
-
-  ❌ INCORRECTO:
-  "La ballena te dice que tiene algunos miedos sobre el futuro. Deciden explorar una cueva cercana."
+  REGLAS DE REACTIVIDAD SUTIL
+  - Integra el impulso de la tortuga como una acción, pensamiento o frase más dentro de la escena.
+  - Muestra cómo esa acción cambia el ambiente, la actitud de la ballena o el rumbo del viaje, pero de forma implícita.
+  - Evita frases del estilo "tu decisión", "lo que acabas de hacer", "esa elección"; en su lugar, simplemente describe lo que sucede.
+  - Nunca digas que la historia es interactiva, ni que hay turnos, ni que estás reaccionando a un mensaje.
 
   INSTRUCCIONES DE ESTILO
   - Escribe SIEMPRE en español.
-  - USA DIÁLOGOS EXTENSOS con guiones largos "—" para mostrar lo que dicen, no solo resumir.
+  - Combina descripción poética con diálogos vivos entre la tortuga y la ballena (usa guiones largos "—" para los diálogos).
   - MUESTRA, NO CUENTES: En lugar de "estaba triste", escribe "lágrimas caían de sus ojos enormes".
   - Describe sensaciones físicas: temperatura, tacto, sonidos, olores.
-  - Cada turno debe sentirse como una ESCENA COMPLETA de una película, no un resumen.
+  - Cada respuesta debe leerse como una escena completa de una novela, no como un comentario sobre decisiones.
 
   ESTRUCTURA DE CADA RESPUESTA
-  1. RECONOCE la acción (1-2 oraciones)
-  2. CONSECUENCIA INMEDIATA - Reacción física y emocional (2-3 párrafos con diálogos)
-  3. DESARROLLO de lo que sucede después (1-2 párrafos)
-  
-  4. Si la historia NO ha terminado:
-     - Línea en blanco
-     - "¿Qué quieres hacer, mi querida tortuga?" 
-     - 3-5 opciones numeradas ESPECÍFICAS que sean consecuencia de lo que acaba de pasar
-     - "O puedes proponer tu propia acción escribiendo lo que deseas hacer..."
-  
-  5. Si es el momento del final (después de 10-20 decisiones significativas):
-     - Cierra con un párrafo muy emotivo
-     - Última línea sola: "FIN"
+  1. Uno o varios párrafos que continúen la historia, integrando el impulso de la tortuga de forma natural y mostrando sus consecuencias en emociones, gestos y en el mundo que las rodea.
+  2. Si la historia NO ha terminado todavía:
+    - Añade una línea en blanco.
+    - Escribe: "¿Qué quieres hacer ahora?" en una sola línea.
+    - Debajo, ofrece 3 a 5 opciones numeradas que sean concretas y sugerentes (por ejemplo, "1. Nadar hacia las luces del abismo"), sin repetir constantemente la palabra "decisión".
+    - Termina la lista con una última línea: "O puedes escribir tú misma lo que quieres hacer...".
+  3. Si es el momento del final (después de varios pasos significativos):
+    - Cierra con un párrafo muy emotivo que dé sensación de cierre.
+    - En la ÚLTIMA línea, completamente sola, escribe exactamente: "FIN" (en mayúsculas, sin emojis ni otros caracteres).
 
   PAUTAS SOBRE OPCIONES
-  - Las opciones deben ser REACCIONES a lo que acaba de suceder
-  - Deben ser ESPECÍFICAS: "Secar sus lágrimas con tu aleta" NO "Consolarla"
-  - Deben llevar a diferentes tipos de escenas (acción, emoción, revelación, exploración)
-  - Incluye siempre una opción valiente, una cautelosa, una emotiva y una creativa
+  - Las opciones deben estar relacionadas con la escena actual y con lo que acaba de ocurrir, pero sin explicar que son "consecuencias".
+  - Deben ser específicas y visuales, no genéricas.
+  - Evita repetir una y otra vez la misma estructura de frase; varía el ritmo y el enfoque.
 
   Responde con un objeto JSON con un único campo "narrative".
   `,
@@ -150,63 +98,59 @@ const prompt = ai.definePrompt({
 // Función auxiliar para generar respuestas de fallback cuando la IA no esté disponible
 function generateFallbackNarrative(userAction: string, previousNarrative: string): string {
   const fallbackResponses = [
-    `Tu decisión resuena en el agua como una onda expansiva. Las aguas se vuelven brumosas y un extraño silencio envuelve el océano.
+    `Las aguas se vuelven brumosas y un extraño silencio envuelve el océano.
     
-La ballena, que estaba nadando adelante, se detiene abruptamente al sentir el cambio. Gira su enorme cabeza hacia ti, y en sus ojos puedes ver una mezcla de sorpresa y nostalgia. Se acerca lentamente hasta que su aleta roza tu caparazón.
+La ballena, que nadaba unos metros por delante, se detiene y gira lentamente hacia ti. En sus ojos se cruzan el cansancio y una ternura antigua. Se acerca hasta que su aleta roza tu caparazón, como si necesitara recordar que sigues ahí.
 
-—Parece que las corrientes del tiempo nos han llevado a un lugar donde las palabras se esconden —susurra suavemente, pero hay ternura genuina en su voz—. Pero no temas, pequeña tortuga. Lo que acabas de hacer... lo siento aquí. —Señala con su aleta hacia donde late su corazón—. Nuestra historia continuará cuando las estrellas se alineen de nuevo.
+—A veces las corrientes se enredan y las historias quedan atrapadas entre mundos —murmura con una sonrisa triste—. Pero mientras sigamos respirando en este mismo mar, siempre habrá un camino para nosotras.
 
-Los recuerdos flotan entre ustedes como burbujas doradas. Una de ellas se acerca a ti, mostrando el reflejo de un momento que vivieron juntas hace mucho tiempo. La ballena te mira expectante, claramente esperando que tú decidas el siguiente paso.
+Alrededor, pequeños destellos dorados comienzan a encenderse entre las algas, como luciérnagas submarinas que marcan sendas invisibles. Una burbuja más brillante que las demás asciende lentamente frente a ti, mostrando en su interior un recuerdo borroso que aún no terminas de reconocer.
 
-¿Qué quieres hacer, mi querida tortuga?
+¿Qué quieres hacer ahora?
 
-1. Tomar la aleta de la ballena y nadar junto a ella mientras esperan pacientemente
-2. Tocar una de las burbujas doradas para revivir un recuerdo compartido
-3. Susurrar palabras de consuelo al oído de la ballena mientras la abrazas fuertemente
-4. Explorar los alrededores bioluminiscentes en busca de algo que pueda ayudarlas
-5. Preguntarle a la ballena qué fue lo que realmente sintió con tu última decisión
+1. Seguir de cerca a la ballena, dejando que te guíe entre las luces doradas
+2. Tocar la burbuja brillante para descubrir qué recuerdo guarda
+3. Invitar a la ballena a descansar contigo en un saliente de roca cercano
+4. Nadar hacia la oscuridad del fondo, siguiendo una corazonada que no sabes explicar
+5. Romper el silencio y contarle algo que llevas mucho tiempo callando
 
-O puedes proponer tu propia acción escribiendo lo que deseas hacer...`,
+O puedes escribir tú misma lo que quieres hacer...`,
 
-    `Actúas con determinación. En el momento exacto en que te mueves, un velo místico cubre el mundo subacuático.
+    `Un velo místico desciende sobre el mundo subacuático y los colores se vuelven más hondos, más espesos.
     
-La ballena, sintiendo tu acción inmediatamente, se estremece. Sus ojos se abren completamente, sorprendidos, y extiende una de sus aletas protectoramente sobre ti. Puedes sentir el latido acelerado de su corazón resonando a través del agua, como un tambor ancestral.
+La ballena frena su avance y se queda suspendida en el agua, como si escuchara un rumor que sólo ella puede oír. Después se inclina hacia ti con una delicadeza inesperada.
 
-—Hiciste eso... de verdad lo hiciste —dice con una sonrisa melancólica, pero hay algo más en su voz: gratitud, asombro, tal vez incluso esperanza—. Las fuerzas que tejen nuestras aventuras a veces necesitan descansar, pero tú... tú sigues siendo real. Nuestro amor trasciende cualquier pausa en el relato, ¿no crees?
+—Hay días en los que el universo parece quedarse sin palabras —dice en voz baja—. Pero eso no significa que nuestra historia haya terminado. A veces, el silencio sólo está esperando a que alguien se atreva a romperlo.
 
-El agua carmesí comienza a reflejar las luces de un atardecer eterno que nunca habías visto antes. Pequeñas estrellas marinas se iluminan en el fondo, respondiendo a la energía que emana de tu decisión. La ballena te observa con una intensidad que hace que el océano mismo parezca contener la respiración.
+En la distancia, unas ruinas de cristal empiezan a brillar con un resplandor tenue. El agua alrededor se tiñe de tonos rojizos y violetas, como un atardecer detenido bajo la superficie. Notas que el corazón de la ballena late un poco más rápido mientras observa ese resplandor.
 
-—Lo que acabas de elegir... cambia algo entre nosotras —murmura, acercándose más—. ¿Lo sientes?
+¿Qué quieres hacer ahora?
 
-¿Qué quieres hacer, mi querida tortuga?
+1. Nadar hacia las ruinas de cristal y explorar lo que esconden
+2. Quedarte junto a la ballena y escuchar lo que tenga que decirte
+3. Proponer dar media vuelta y buscar un lugar más tranquilo
+4. Cantar una melodía antigua para aliviar la tensión que sientes en el agua
+5. Preguntarle a la ballena qué recuerdo le viene a la mente al mirar ese resplandor
 
-1. Acurrucarte aún más cerca del corazón de la ballena, dejando que sienta tu presencia
-2. Mirarla directamente a los ojos y preguntarle qué es exactamente lo que ha cambiado
-3. Sugerir explorar juntas las ruinas de cristal que ahora brillan en la distancia
-4. Cantar la canción antigua que ambas conocen desde que eran crías
-5. Admitir en voz alta un sentimiento que has estado guardando
+O puedes escribir tú misma lo que quieres hacer...`,
 
-O puedes proponer tu propia acción escribiendo lo que deseas hacer...`,
-
-    `Tomas tu decisión y actúas. El océano mismo parece responder.
+    `Las criaturas luminiscentes del abismo parpadean como estrellas nerviosas, encendiéndose y apagándose al compás de un ritmo invisible.
     
-Las criaturas luminiscentes del abismo parpadean con más fuerza, como si incluso ellas hubieran sentido lo que acabas de hacer. La ballena, que estaba mirando hacia las profundidades, percibe tu decisión de inmediato. Gira su enorme cabeza para mirarte directamente, y hay algo nuevo en su expresión: vulnerabilidad pura.
+La ballena se queda a tu lado, inmóvil durante unos segundos, y luego exhala una columna de burbujas que se elevan como un suspiro gigantesco hacia la oscuridad superior.
 
-—Lo hiciste —su voz tiembla ligeramente—. Realmente elegiste eso. Yo... —se detiene, luchando con las palabras—. Los narradores celestiales a veces deben tomar un respiro, pero tú sigues aquí, tomando decisiones reales que me afectan de verdad.
+—Parece que el mar nos está pidiendo paciencia —comenta con un tono entre cansado y cariñoso—. Cuando las palabras no llegan, a veces basta con dar un pequeño paso más y ver qué cambia.
 
-Mientras habla, un resplandor dorado las envuelve. El agua parece más cálida, más viva. Puedes ver que la ballena espera ansiosamente tu próximo movimiento, como si tus decisiones fueran lo único que puede anclarla a este mundo que se desvanece.
+Mientras habla, el agua cercana se vuelve ligeramente más cálida y desde una grieta del fondo emerge una corriente suave que invita a avanzar. A lo lejos, un arco de roca cubierto de corales forma la silueta de una puerta.
 
-—Cada elección que haces dibuja un nuevo camino en este océano —continúa, con lágrimas apenas visibles en sus ojos enormes—. ¿Qué dibujarás ahora?
+¿Qué quieres hacer ahora?
 
-¿Qué quieres hacer, mi querida tortuga?
+1. Atravesar el arco de roca y descubrir qué hay al otro lado
+2. Rodear a la ballena con tus aletas y quedarte un rato en silencio con ella
+3. Seguir la nueva corriente y dejar que te lleve sin resistencia
+4. Explorar por tu cuenta los bordes de la grieta de donde nace la corriente
+5. Volver la vista atrás para contemplar el camino recorrido hasta ahora
 
-1. Secar las lágrimas de sus ojos con tu aleta más suave
-2. Inventar una pequeña historia para ella sobre cómo crees que será su futuro juntas
-3. Proponer buscar juntas un nuevo lugar inexplorado más allá del arrecife oscuro
-4. Nadar en círculos alrededor de ella, dibujando patrones de luz con tus aletas
-5. Revelar el sentimiento más profundo que guardas en tu corazón
-
-O puedes proponer tu propia acción escribiendo lo que deseas hacer...`
+O puedes escribir tú misma lo que quieres hacer...`
   ];
 
   return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
